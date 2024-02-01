@@ -31,7 +31,7 @@ long sum_fenwick(long fenwick_tree[], int index) {
  * @param add_value
  * @return void
  */
-void update_fenwick(long fenwick_tree[], int fenwick_length, int index, int add_value) {
+void update_fenwick(long fenwick_tree[], int fenwick_length, int index, long add_value) {
     // Increment index because fenwick starts at index 1 not 0
     index++;
     // Stop when we have gone to the highest layer of the tree (cannot be longer than actual length)
@@ -53,22 +53,36 @@ int main() {
     int list_length = stoi(input);
 
     int indexes[list_length-1];
-
-    // Initiate all elements to 0
-    long fenwick_tree[list_length] = {1};
-
+    long fenwick_tree[list_length+1];// = {1};
     // Compute operations for each line
     for(int i = 0; i < list_length; i++) {
         cin >> input;
         int number = stoi(input);
-        indexes[number] = i
+        indexes[number] = i;
+        // Set all element to 1 in tree
+        fenwick_tree[i] = 1;
     }
 
-    // Get word length for each of the stuff
-    for(int i = 0; i < list_length; i++) {
-        int index = 1; //index switches, 1, N, 2, N-1, 3, N-2 ...
-        update_fenwick(fenwick_tree, list_length, , )
+    fenwick_tree[list_length] = 1;
+    fenwick_tree[list_length + 1] = 1;
 
+
+    // Get word length for each of the stuff
+    int iteration = 0;
+    while(iteration < list_length) {
+        int swaps = 0;
+        if(iteration % 2 == 0) {
+            // Add 1 because fenwick start from 1
+            int index = iteration + 1;
+            update_fenwick(fenwick_tree, list_length, index, -1);
+            swaps = sum_fenwick(fenwick_tree, index);
+        } else {
+            int index = list_length + 2 - iteration;
+            update_fenwick(fenwick_tree, list_length, index, -1);
+            swaps = sum_fenwick(fenwick_tree, index) - sum_fenwick(fenwick_tree, list_length);
+        }
+        cout << swaps << "\n";
+        iteration++;
         // Set index i to 0 and count up (up) or down (up-down)
         // Maybe do a while loop instead, 1 N, 2 N-1, 3, N-2
     }
