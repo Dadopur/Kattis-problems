@@ -13,7 +13,7 @@
  * This goes on till the 2^M where M is the biggest power of 2 in N.
  *
  * This property gives it the ability to sum up values up to index i with complexity O(Nlog(N)).
- * It also has complexity of O(Nlog(N)) when changing/updating a value in the tree.
+ * It also has complexity of O(Nlog(N)) when changing a value in the tree.
  *
  * @copyright Copyright (c) 2024
  *
@@ -25,17 +25,6 @@
 #include <iterator>
 using namespace std;
 
-/**
- * @brief Seperates a input string with spaces into a vector.
- *
- * @param str
- * @return vector<string>
- */
-vector<string> separate_string (string str) {
-    stringstream ss{str};
-    // Iterates over ss and puts every word into a vector<string> (through constructor)
-    return { istream_iterator<string>{ ss }, istream_iterator<string>{}  };
-}
 
 /**
  * @brief Sums all elements up to index index. Has time complexity O(Nlog(N)).
@@ -43,11 +32,11 @@ vector<string> separate_string (string str) {
  * @param index
  * @return long
  */
-long sum_fenwick(vector<long>* fenwick_tree, int index) {
+long sum_fenwick(long fenwick_tree[], int index) {
     long sum = 0;
     // Sum tills we cannot sum anymore (smalles bigroup summed)
     while(index > 0) {
-        sum += (*fenwick_tree)[index];
+        sum += (fenwick_tree)[index];
         // Flip the lowest significant 1 to a 0. This acts as going to a lower layer of the tree.
         index -= (index & (-index));
     }
@@ -63,12 +52,12 @@ long sum_fenwick(vector<long>* fenwick_tree, int index) {
  * @param add_value
  * @return void
  */
-void update_fenwick(vector<long>* fenwick_tree, int fenwick_length, int index, int add_value) {
+void update_fenwick(long fenwick_tree[], int fenwick_length, int index, int add_value) {
     // Increment index because fenwick starts at index 1 not 0
     index++;
     // Stop when we have gone to the highest layer of the tree (cannot be longer than actual length)
     while(index < fenwick_length) {
-        (*fenwick_tree)[index] += add_value;
+        (fenwick_tree)[index] += add_value;
         // Step to a higher layer that uses sum of position current index.
         index += (index & (-index));
     }
@@ -77,37 +66,39 @@ void update_fenwick(vector<long>* fenwick_tree, int fenwick_length, int index, i
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
+    cout.tie(NULL);
     string input;
     // Get first input (N, Q) were N is length of fenwick vector and Q numer of operations
-    getline(cin, input);
-    vector<string> split_input = separate_string(input);
-    string N = split_input[0];
-    string Q = split_input[1];
+    cin >> input;
     // Fenwick structure start at intiger 1 instead of 0
-    int fenwick_length = stoi(N) + 1;
-    int num_operations = stoi(Q);
+    int fenwick_length = stoi(input) + 1;
+    cin >> input;
+    int num_operations = stoi(input);
 
-    vector<long> fenwick_tree(fenwick_length+1, 0);
+    // Initiate all elements to 0
+    long fenwick_tree[fenwick_length] = {0};
 
     // Compute operations for each line
     for(int i = 0; i < num_operations; i++) {
-        getline(cin, input);
-        split_input = separate_string(input);
+        cin >> input;
         // Sum operation is used
-        if(split_input[0] == "?") {
+        if(input == "?") {
             // Get input parameter
-            int index = stoi(split_input[1]);
+            cin >> input;
+            int index = stoi(input);
             // Get sum up to index index
-            long sum = sum_fenwick(&fenwick_tree, index);
+            long sum = sum_fenwick(fenwick_tree, index);
             // Print to terminal
             cout << sum << "\n";
         // Update vector by addinga integer
         } else {
             // Get input parameters
-            int index = stoi(split_input[1]);
-            long add_value = stoi(split_input[2]);
+            cin >> input;
+            int index = stoi(input);
+            cin >> input;
+            long add_value = stoi(input);
             // Update the tree
-            update_fenwick(&fenwick_tree, fenwick_length, index, add_value);
+            update_fenwick(fenwick_tree, fenwick_length, index, add_value);
         }
     }
 }
