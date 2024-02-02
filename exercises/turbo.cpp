@@ -49,41 +49,43 @@ int main() {
     string input;
     // Get first input (N, Q) were N is length of fenwick vector and Q numer of operations
     cin >> input;
-    // Fenwick structure
-    int list_length = stoi(input);
 
-    int indexes[list_length-1];
-    long fenwick_tree[list_length+1];// = {1};
+    int list_length = stoi(input);
+    
+    vector<int> indexes(list_length);
+    
+    long fenwick_tree[list_length+1] = {0};
     // Compute operations for each line
     for(int i = 0; i < list_length; i++) {
         cin >> input;
         int number = stoi(input);
-        indexes[number] = i;
+        // Add what number has what index, where every element represents each number (shifted by -1)
+        indexes[number-1] = i;
         // Set all element to 1 in tree
-        fenwick_tree[i] = 1;
+        update_fenwick(fenwick_tree,list_length +1, i ,1);
     }
-
-    fenwick_tree[list_length] = 1;
-    fenwick_tree[list_length + 1] = 1;
-
-
-    // Get word length for each of the stuff
-    int iteration = 0;
+    int iteration = 0; // Iteration to know if even or odd
+    int k = 0; // keep track what number we are on, also used for odd (N-k).
     while(iteration < list_length) {
         int swaps = 0;
+        // Even
         if(iteration % 2 == 0) {
-            // Add 1 because fenwick start from 1
-            int index = iteration + 1;
-            update_fenwick(fenwick_tree, list_length, index, -1);
+            int index = indexes[k]; // Get what index current number has
+            // Update that current pos has been visited and shifted down.
+            update_fenwick(fenwick_tree, list_length+1, index, -1);
+            // Get how many shifts it takes to do down all the way. (number of elements down)
             swaps = sum_fenwick(fenwick_tree, index);
+            k++;
+
+        // Odd
         } else {
-            int index = list_length + 2 - iteration;
-            update_fenwick(fenwick_tree, list_length, index, -1);
-            swaps = sum_fenwick(fenwick_tree, index) - sum_fenwick(fenwick_tree, list_length);
+            int index = indexes[list_length - k]; // get what index current number has
+            // Update that current pos has been visited and shifted up.
+            update_fenwick(fenwick_tree, list_length+1, index, -1);
+            // How many shift up do go all the way up.
+            swaps = sum_fenwick(fenwick_tree, list_length) - sum_fenwick(fenwick_tree, index);
         }
         cout << swaps << "\n";
         iteration++;
-        // Set index i to 0 and count up (up) or down (up-down)
-        // Maybe do a while loop instead, 1 N, 2 N-1, 3, N-2
     }
 }
