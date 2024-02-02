@@ -1,13 +1,2 @@
 #include <stdio.h>
-int main() {
-    int n;
-    int k = 0;
-    do{
-        scanf("%d", &n);
-        while(n != k){
-            k = n;
-            printf("%c", "0125689"[n%7]);
-            n/=7;
-        }
-    } while(n);
-}
+int main(){int n;while(scanf("%d",&n)!=EOF){while(n>0){printf("%c","0125986"[n%7]);n/=7;}printf("\n");}}
