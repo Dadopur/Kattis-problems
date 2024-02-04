@@ -5,18 +5,16 @@
  * @version 0.1
  * @date 2024-02-01
  *
- * A fenwick tree is a array/list of length N that can be represented as a tree.
+ * A fenwick tree is a array/list of length N that can be represented as a tree and used
+ * for its fast updates and summations.
  * It is done by combining the sum of different parts of the array and storing them in
  * indexes of powers of 2. The first part is to pair up elements of index 2^0,
  * meaning 1-2, 3-4, 5-6 and so on get paird up. This means that 2 has sum of 1 and 2, 4 has sum om 3 and 4,
  * but 1,3,5 has thier own value. Then indexes 2^1: 2-4, 6-8 and so on.
  * This goes on till the 2^M where M is the biggest power of 2 in N.
  *
- * This property gives it the ability to sum up values up to index i with complexity O(Nlog(N)).
- * It also has complexity of O(Nlog(N)) when changing a value in the tree.
- *
- * @copyright Copyright (c) 2024
- *
+ * This property gives it the ability to sum up values up to index i with complexity O(log(N)).
+ * It also has complexity of O(Nlog()) when changing a value in the tree.
  */
 
 #include <iostream>
@@ -29,8 +27,9 @@ using namespace std;
 /**
  * @brief Sums all elements up to index index. Has time complexity O(Nlog(N)).
  *
- * @param index
- * @return long
+ * @param fenwick_tree Fenwick tree used ofr summation.
+ * @param index Index to be upped up to.
+ * @return long that is summation of all values up till index.
  */
 long sum_fenwick(long fenwick_tree[], int index) {
     long sum = 0;
@@ -46,10 +45,10 @@ long sum_fenwick(long fenwick_tree[], int index) {
 /**
  * @brief Updates the fenwick tree by adding a value to position index. Has time complexity O(Nlog(N)).
  *
- * @param fenwick_tree
- * @param fenwick_length
- * @param index
- * @param add_value
+ * @param fenwick_tree Fenwicktree to be updated.
+ * @param fenwick_length Length of fenwick tree.
+ * @param index Index that is to be updated.
+ * @param add_value Value that is to be added on in position Index.
  * @return void
  */
 void update_fenwick(long fenwick_tree[], int fenwick_length, int index, int add_value) {
