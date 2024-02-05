@@ -1,5 +1,5 @@
 import math
-while(1):
+while 1:
  x,n=int(input()),0
  if x==0:break
  elif x>0:n=1
