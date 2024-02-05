@@ -15,7 +15,8 @@ int flip_stone(bitset<3> stones, bitset<3> choice){
     if (stones.flip(2) == choice) {
         return 2;
     } 
-    
+    stones.flip(2);
+
     return -1;
 }
 
@@ -25,25 +26,28 @@ int main(){
     cout.tie(NULL);
     int rounds;
     cin >> rounds;
+    // How many test cases/ rounds will go down.
     for(int i = 0; i < rounds; i++) {
         int priests;
         cin >> priests;
-        bitset<3> stones; 
+        bitset<3> stones;
+        // Make one priest choice for all priests.
         for(int priest = 0; priest < priests; priest++) {
-            for(int k = 0; k < 8; k++){ // MAKE K A LIST OF ALL CHOICES FOR EVERY PRIEST; THEN WE CAN BREAK (we take inputs now per line)
+            int choices[8];
+            // Get the priests answers
+            for(int k = 0; k < 8; k++){
                 int choice;
                 cin >> choice;
+                choices[k] = choice;
+            }
+            // Greedy check: take first best answer thats possible to do.
+            for(int choice : choices){
                 bitset<3> optimal_stones(choice-1);
-                cout << "priest " << priest << endl;
-                cout << "bit: " << optimal_stones << endl;
                 int swap = flip_stone(stones, optimal_stones);
-                cout << "SWAP " << swap << endl;
                 if (swap == -1){
                     continue;
                 } else {
-                    //cout << "BEFORE flipped: " << stones << endl;
                     stones.flip(swap);
-                    //cout << "AFTER flipped: " << stones << endl;
                     break;
                 }
             }
