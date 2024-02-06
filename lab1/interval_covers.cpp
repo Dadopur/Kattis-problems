@@ -33,8 +33,10 @@ vector<int> count_intervals(tuple<double, double> interval, vector<tuple<double,
 
         // Update end, is it a better interval or worse?
         if (new_start <= start) {
-            end = max(new_end, end);
-            index = get<2>(new_interval);
+            if (new_end > end) {
+                end = new_end;
+                index = get<2>(new_interval);
+            }
             i++;
         } else {
             // Current interval doesn't cover the start, need a new interval
