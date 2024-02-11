@@ -1,23 +1,24 @@
 #include <iostream>
 #include <bitset> 
+#include <vector>
 using namespace std;
 
-int flip_stone(bitset<3> stones, bitset<3> choice){
+bool flip_stone(bitset<4> stones, bitset<4> choice){
     if(stones.flip(0) == choice) {
-        return 0;
+        return true;
     }
     stones.flip(0);
     if (stones.flip(1) == choice) {
-        return 1;
+        return true;
     }
     stones.flip(1);
 
     if (stones.flip(2) == choice) {
-        return 2;
+        return true;
     } 
     stones.flip(2);
 
-    return -1;
+    return false;
 }
 
 int main(){
@@ -30,28 +31,37 @@ int main(){
     for(int i = 0; i < rounds; i++) {
         int priests;
         cin >> priests;
-        bitset<3> stones;
+        vector<vector<bitset<4>>> stone_outputs(priests, vector<bitset<4>>(8,bitset<4>(4)));
         // Make one priest choice for all priests.
         for(int priest = 0; priest < priests; priest++) {
-            int choices[8];
-            // Get the priests answers
+            vector<int> choices(8,0);
+            // Get the priests prefered answers
             for(int k = 0; k < 8; k++){
                 int choice;
                 cin >> choice;
-                choices[k] = choice;
+                choices[k] = choice-1;
             }
-            // Greedy check: take first best answer thats possible to do.
-            for(int choice : choices){
-                bitset<3> optimal_stones(choice-1);
-                int swap = flip_stone(stones, optimal_stones);
-                if (swap == -1){
-                    continue;
-                } else {
-                    stones.flip(swap);
-                    break;
+            // Fill out what priest will output for what input (input/output in binary 3 stones)
+            for(int stone_input = 0; stone_input < 8; stone_input++){ // Stone combination
+                for(int choice : choices){ // What the order of wanted result is
+                    bitset<4> combination = stone_outputs[priest][stone_input];
+                    // If output not set for current stone combination, set it, otherwise go to next combination
+                    if(int(combination.to_ulong()) == 4) {
+                        bitset<4> optimal_stones(choice);
+                        bitset<4> input_stones_bits(stone_input);
+                        // Possible to go to current choice from current stones?
+                        if(flip_stone(input_stones_bits, optimal_stones)){
+                            stone_outputs[priest][stone_input] = optimal_stones;
+                        }
+                    } else {
+                        break;
+                    }
                 }
             }
         }
+
+        // Go backwards and check if it is possible for this stone combination at the end to exist.
+        // Take optimal combination for the last priest that is valid.
 
         switch (int(stones.to_ulong())) {
             case 0:
