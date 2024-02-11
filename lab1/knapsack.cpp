@@ -1,7 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <sstream>
-#include <iterator>
 using namespace std;
 
 struct Item
@@ -37,41 +35,26 @@ vector<int> knapsack(vector<Item> items, int capacity) {
         }
     }
 
-    for(auto lala : grid){
-        for(int la : lala){
-            cout << la << endl;
-        }
-    }
-
     vector<int> items_in_sack;
     int curr_capacity = capacity;
+
     // Back tracking to find optimal path.
     for(int index = num_items-1; index >= 0; index--) {
         Item item = items[index];
         int weight = item.weight;
 
         int curr_value = grid[index+1][curr_capacity];
-        if(curr_capacity > weight) {
-            cout << "inside first layer " << curr_capacity <<" weight "<< weight << endl;
-            int next_value_side = grid[index][curr_capacity-weight];
+        // Space in sack to add item
+        if(curr_capacity >= weight) {
             int next_value_straight = grid[index][curr_capacity];
-            cout<< "bajs "<< next_value_side << " "<<next_value_straight << endl;
-            if(next_value_side > next_value_straight) {
-                cout << "before " << curr_capacity << endl;
+            // Adding curr item gives more value than not adding
+            if(curr_value > next_value_straight) {
                 curr_capacity -= weight;
-                cout << "after " << curr_capacity << endl;
                 items_in_sack.push_back(index);
             }
-        } else if(curr_capacity == weight) {
-            items_in_sack.push_back(index);
-            break;
-        }
+        } 
     }
-    cout << "banan" << endl;
-    for(auto i : items_in_sack){
-        cout <<"here" << endl;
-        cout << i << endl;
-    }
+
     return items_in_sack;
 }
 
@@ -93,10 +76,10 @@ int main() {
             items.push_back(t);
         }
         vector<int> items_in_sack = knapsack(items, capacity);
-            cout << "HERE "<< endl; 
         cout << items_in_sack.size() << "\n";
-        for(int item : items_in_sack) {
-            cout << item << "\n";
+        for(auto item = items_in_sack.rbegin(); item != items_in_sack.rend(); ++item) {
+            cout << *item << " ";
         }
+        cout << "\n";
     }
 }
