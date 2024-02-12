@@ -1,71 +1,82 @@
 #include <iostream>
-#include <bitset> 
 #include <vector>
+#include <algorithm>
 using namespace std;
 
-bool flip_stone(bitset<4> stones, bitset<4> choice){
-    if(stones.flip(0) == choice) {
-        return true;
-    }
-    stones.flip(0);
-    if (stones.flip(1) == choice) {
-        return true;
-    }
-    stones.flip(1);
-
-    if (stones.flip(2) == choice) {
-        return true;
-    } 
-    stones.flip(2);
-
-    return false;
-}
 
 int main(){
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
     cout.tie(NULL);
+    
+    vector<vector<int>> FLIP_OUTCOMES = {
+        vector<int>{1, 2, 4},
+        vector<int>{0, 3, 5},
+        vector<int>{0, 3, 6},
+        vector<int>{1, 2, 7},
+        vector<int>{0, 5, 6},
+        vector<int>{1, 4, 7},
+        vector<int>{2, 4, 7},
+        vector<int>{3, 5, 6}
+    };
     int rounds;
     cin >> rounds;
     // How many test cases/ rounds will go down.
     for(int i = 0; i < rounds; i++) {
         int priests;
         cin >> priests;
-        vector<vector<bitset<4>>> stone_outputs(priests, vector<bitset<4>>(8,bitset<4>(4)));
-        // Make one priest choice for all priests.
+        // Initiate all grid values to 0 at first
+        vector<vector<int>> stone_outputs(priests, vector<int>(8, 0));
+        vector<int> temp;
+        for(int n = 0; n < 8; n++) {
+            temp.push_back(n);
+        }
+        stone_outputs.push_back(temp);
+
+        vector<vector<int>> choices;
+        // One priest at a time.
         for(int priest = 0; priest < priests; priest++) {
-            vector<int> choices(8,0);
+            vector<int> temp_choice(8,0);
             // Get the priests prefered answers
             for(int k = 0; k < 8; k++){
                 int choice;
                 cin >> choice;
-                choices[k] = choice-1;
+                temp_choice[k] = choice-1;
             }
+            choices.push_back(temp_choice);
+        }
+
+        for(int priest = priests-1; priest <= 0; priest++){
             // Fill out what priest will output for what input (input/output in binary 3 stones)
             for(int stone_input = 0; stone_input < 8; stone_input++){ // Stone combination
-                for(int choice : choices){ // What the order of wanted result is
-                    bitset<4> combination = stone_outputs[priest][stone_input];
-                    // If output not set for current stone combination, set it, otherwise go to next combination
-                    if(int(combination.to_ulong()) == 4) {
-                        bitset<4> optimal_stones(choice);
-                        bitset<4> input_stones_bits(stone_input);
-                        // Possible to go to current choice from current stones?
-                        if(flip_stone(input_stones_bits, optimal_stones)){
-                            stone_outputs[priest][stone_input] = optimal_stones;
-                        }
-                    } else {
-                        break;
+                // Find best output choice
+                int best_choice;
+                int best_index;
+                for(int flip_value : FLIP_OUTCOMES[stone_input]) {
+                    vector<int> choice_vector = choices[priest];
+                    int prev_priest_choice = stone_outputs[priest+1][flip_value];
+                    auto iter = find(choice_vector.begin(), choice_vector.end(), prev_priest_choice);
+                    int index = iter - choice_vector.begin(); 
+                    if(index < best_index) {
+                        best_index = index;
+                        best_choice = prev_priest_choice;
                     }
                 }
+                stone_outputs[priest][stone_input] = best_choice;
             }
         }
 
-        // Go backwards and check if it is possible for this stone combination at the end to exist.
-        // Take optimal combination for the last priest that is valid.
-        
-        int temp;
+        cout << endl;
+        for(auto i: stone_outputs){
+            for(auto n : i) {
+                cout << n << " ";
+            }
+            cout << endl;
+        }
 
-        switch (temp) {
+        int out = stone_outputs[0][0];
+
+        switch (out) {
             case 0:
                 cout << "NNN\n";
                 break;
