@@ -62,8 +62,10 @@ int main(){
 
         // Go backwards and check if it is possible for this stone combination at the end to exist.
         // Take optimal combination for the last priest that is valid.
+        
+        int temp;
 
-        switch (int(stones.to_ulong())) {
+        switch (temp) {
             case 0:
                 cout << "NNN\n";
                 break;

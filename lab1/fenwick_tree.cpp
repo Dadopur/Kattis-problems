@@ -14,7 +14,8 @@
  * This goes on till the 2^M where M is the biggest power of 2 in N.
  *
  * This property gives it the ability to sum up values up to index i with complexity O(log(N)).
- * It also has complexity of O(Nlog()) when changing a value in the tree.
+ * It also has complexity of O(Nlog()) when changing a value in the tree. This is because the array is
+ * divided in group of 2 down to the last layer. The problem also uses memory as big as input array O(N).
  */
 
 #include <iostream>
