@@ -4,7 +4,7 @@
  * @brief Problem solved is disjoint sets with the union-find problem. This is a problem where
  * unions can be made between disjoint sets and two elements can be compared to see if they are 
  * in the same union. These operations are done in amortized time complexity O(log(N)) through
- * path compression and merging on size. 
+ * path compression and merging based on union size. 
  * @version 0.1
  * @date 2024-02-14
  */
@@ -12,6 +12,7 @@
 // Imports
 #include <iostream>
 #include <vector>
+#include <numeric>
 using namespace std;
 
 /**
@@ -21,7 +22,7 @@ using namespace std;
  * @param a Integer which root is to be found.
  * @return int of root node for element a.
  */
-int find_root(vector<int> parents, int a) {
+int find_root(vector<int>& parents, int a) {
     if(parents[a] == a) {
         // Root has itself as parent
         return a;
@@ -42,7 +43,7 @@ int find_root(vector<int> parents, int a) {
  * @return true if a and b are in same union,
  * @return false otherwise.
  */
-bool find(vector<int> parents, int a, int b) {
+bool find(vector<int>& parents, int a, int b) {
     // Same root means same union
     if(find_root(parents, a) == find_root(parents, b)){
         return true;
@@ -59,7 +60,7 @@ bool find(vector<int> parents, int a, int b) {
  * @param a Integer (element) which root union is to be merged with root union of b.
  * @param b Integer (element) whoch root union is to be merged with root union of a.
  */
-void merge_unions(vector<int> parents, vector<int> union_sizes, int a, int b) {
+void merge_unions(vector<int>& parents, vector<int>& union_sizes, int a, int b) {
     // Fint root nodes
     int root_a = find_root(parents, a);
     int root_b = find_root(parents, b);
@@ -96,9 +97,12 @@ int main() {
     int N, Q;
     cin >> N >> Q;
 
+    // Initialize parent nodes and sizes of disjoint unions
     vector<int> parents(N);
+    iota(parents.begin(), parents.end(), 0);
     vector<int> union_sizes(N, 1);
-    for(int operation = 0; operation < Q; Q++) {
+    
+    for(int operation = 0; operation < Q; operation++) {
         char op;
         int first_num, second_num;
         cin >> op >> first_num >> second_num;
