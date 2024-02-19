@@ -1,27 +1,47 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <utility>
+#include <algorithm>
 using namespace std;
 
 struct Node {
-    int value; 
+    int index;
     // Maybe change to pair instead of 2 seperate vectors
     vector<Node*> connections;
     vector<int> edge_costs;
 };
 
+bool node_value_compare(pair<int, int> node1, pair<int, int> node2) {
+    return (get<1>(node1) < get<1>(node2));
+}
 
+vector<pair<int, int>> dijkstra(vector<Node*>& nodes, int start_node_index) {
+    // Pair of (prev_index, curr_value) 
+    vector<pair<int, int>> table(nodes.size(), {0, numeric_limits<int>::max()});
+    vector<int> visited_nodes;
 
+    Node* start_node = nodes[start_node_index];
+    table[start_node_index].second = 0;
 
+    // Go through all edges in start node and update next node_index (value = edge_cost + curr_value)
+    // Add curr node index to visited nodes, go to next node in 
+    // dont go back and update/ check already visited nodes.
+
+    // Use a set, the we need to have a tuple/ 3 long array cuz index will change.
+    vector<pair<int, int>>::iterator next_node = min_element(table.begin(), table.end(), node_value_compare);
+
+    return table;
+} 
 
 void add_node(vector<Node*>& nodes, int node1, int node2, int weight) {
     // Add nodes if not initialized
     if(nodes[node1] == nullptr) {
-        nodes[node1] = new Node{numeric_limits<int>::max()};
+        nodes[node1] = new Node{node1};
     }
 
     if(nodes[node2] == nullptr) {
-        nodes[node2] = new Node{numeric_limits<int>::max()};
+        nodes[node2] = new Node{node2};
     }
 
     // Add connections and edge costs
@@ -50,14 +70,5 @@ int main(){
             add_node(nodes, node1, node2, weight); 
         }
 
-        for(int i = 0; i < n; i++){
-            Node* a = nodes[i];
-            cout << a << endl;
-            if(a != nullptr) {
-                cout <<"size: " << a ->connections.size() << " ";
-                cout << "value: " << a->value << " ";
-            }
-            cout << endl;
-        }
     }
 }
