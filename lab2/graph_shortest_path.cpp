@@ -6,10 +6,17 @@
 using namespace std;
 
 struct Node {
+    Node(const int in_index) : index(in_index) {}
     int index;
-    // Maybe change to pair instead of 2 seperate vectors
+    // add a value to this
+    // change to pair instead of 2 seperate vectors
     vector<Node*> connections;
     vector<int> edge_costs;
+    ~Node(){
+        for(auto node : connections){
+            delete node;
+        }
+    }
 };
 
 bool node_value_compare(pair<int, int> node1, pair<int, int> node2) {
@@ -63,6 +70,7 @@ int main(){
 
     int n, m, q, s;
     while((cin >> n >> m >> q >> s) && !(n==0 && m==0 && q==0 && s==0)) {
+        // Init with empty nodes instead of nullptr:s
         vector<Node*> nodes(n, nullptr);
         int node1, node2, weight;
         for(int i = 0; i < m; i++) {
