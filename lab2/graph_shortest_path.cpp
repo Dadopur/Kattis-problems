@@ -1,3 +1,11 @@
+/**
+ * @file graph_shortest_path.cpp
+ * @author Daniel Purgal, danpu323 (danpu323@student.liu.se)
+ * @brief 
+ * @version 0.1
+ * @date 2024-02-21
+ * 
+ */
 #include <iostream>
 #include <vector>
 #include <limits>
@@ -5,15 +13,19 @@
 #include <algorithm>
 using namespace std;
 
-struct Node;
+class Node;
 
 struct Edge {
     // Constructor
     Edge(Node* node, const int cost) : connection_node(node), edge_cost(cost) {}
+    
+    
     // Destructor
-    ~Edge() {
-        delete connection_node;
-    }
+    // ~Edge() {
+    //     delete connection_node;
+    // }
+
+
     // Variables
     const Node* connection_node;
     const int edge_cost; 
@@ -22,7 +34,7 @@ struct Edge {
 class Node {
     public:
         // Constructor
-        Node(const int in_index) : index(in_index), visited(false), value(0) {}
+        Node(const int in_index, int in_value) : index(in_index), value(in_value), visited(false) {}
         // Destructor
         ~Node(){
             for(auto edge : edges){
@@ -77,12 +89,19 @@ bool node_value_compare(pair<int, int> node1, pair<int, int> node2) {
     return (get<1>(node1) < get<1>(node2));
 }
 
-vector<pair<int, int>> dijkstra(vector<Node*>& nodes, int start_node_index) {
+vector<pair<int, int>> dijkstra(vector<Node*>& graph, int start_node_index) {
+
+    Node* start_node = graph[start_node_index];
+    start_node->set_value(0);
+    
+    // Add all node pointers to the set comparing them on distance, dont forget to remove and re-add nodes with updated value
+
+
     // Pair of (prev_index, curr_value) 
-    vector<pair<int, int>> table(nodes.size(), {0, numeric_limits<int>::max()});
+    vector<pair<int, int>> table(graph.size(), {0, numeric_limits<int>::max()});
     vector<int> visited_nodes;
 
-    Node* start_node = nodes[start_node_index];
+    Node* start_node = graph[start_node_index];
     table[start_node_index].second = 0;
 
     // Go through all edges in start node and update next node_index (value = edge_cost + curr_value)
@@ -103,10 +122,10 @@ vector<pair<int, int>> dijkstra(vector<Node*>& nodes, int start_node_index) {
  * @param node2 Index of second node to be connected.
  * @param cost Path cost for the connection (edge).
  */
-void add_edge(vector<Node*>& nodes, int node1, int node2, int cost) {
+void add_edge(vector<Node*>& graph, int node1, int node2, int cost) {
     // Get nodes to be connected
-    Node* primary_node = nodes[node1];
-    Node* secundary_node = nodes[node2];
+    Node* primary_node = graph[node1];
+    Node* secundary_node = graph[node2];
     
     // Make new edges 
     Edge* edge1 = new Edge{primary_node, cost};
@@ -122,13 +141,18 @@ void add_edge(vector<Node*>& nodes, int node1, int node2, int cost) {
  * 
  * @param nodes Vector of length N (number of nodes) to be initialized with nodes pointers.
  */
-void init_nodes(vector<Node*>& nodes) {
-    for(int i = 0; i < nodes.size(); i++) {
-        nodes[i] = new Node{i};
+void init_nodes(vector<Node*>& graph, int init_value) {
+    for(int i = 0; i < graph.size(); i++) {
+        graph[i] = new Node{i, init_value};
     }
 }
 
-
+/**
+ * @brief Main function that takes inputs and outputs to the consol.
+ * Finds the shortest (lowest cost) path to a given node in a given graph.
+ * 
+ * @return int 
+ */
 int main(){
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
@@ -136,13 +160,13 @@ int main(){
 
     int n, m, q, s;
     while((cin >> n >> m >> q >> s) && !(n==0 && m==0 && q==0 && s==0)) {
-        vector<Node*> nodes(n);
-        init_nodes(nodes);
+        vector<Node*> graph(n);
+        init_nodes(graph, numeric_limits<int>::max());
 
         int node1, node2, weight;
         for(int i = 0; i < m; i++) {
             cin >> node1 >> node2 >> weight;
-            add_edge(nodes, node1, node2, weight); 
+            add_edge(graph, node1, node2, weight); 
         }
 
     }
