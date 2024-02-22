@@ -199,30 +199,54 @@ int main(){
         int start_index;
         int node_index = 0;
 
-        string prev_line, curr_line, next_line;
-        for(int y_input = 0; y_input < h; y_input++) {
-            string m;
-            cin >> m;
-            if(y_input == 0) {
-                prev_line = m;
-            } 
-            else if(y_input == h-1) {
-
+        vector<vector<char>> world_map(h, vector<char>(w));
+        string s;
+        int start_y, start_x;
+        for(int i = 0; i < h; i++) {
+            cin >> s;
+            for(int c = 0; c < w; c++) {
+                world_map[i][c] = s[c];
             }
-            else {
+        }
 
-            }
-            for(int x_input = 0; x_input < w; x_input++) {
-                if(m[x_input] != '#' || x_input != 0 || x_input != w-1 || y_input != 0 || y_input != h-1) {
-                    if(m[x_input] == 'A') {
-                        alien_node_indexes.push_back(node_index);
-                        node_index++;
-                    }
-                    else if(m[x_input] == 'S') {
-                        start_index = node_index;
-                        node_index;
-                    }
+        int node_index;
+        for(int y = 0; y < h; y++) {
+            for(int x = 0; x < w; x++) {
+                char curr_char = world_map[y][x];
+                // cant loop up
+                if(y == 0) {
+                    char down_char = world_map[y+1][x];
+                    char left_char = world_map[y][x-1];
+                    char right_char = world_map[y][x+1];
+                    
+
                 }
+                // cant look down
+                if(y == h-1) {
+                    char up_char = world_map[y-1][x];
+                    char left_char = world_map[y][x-1];
+                    char right_char = world_map[y][x+1];
+                }
+                // cant look left
+                if(x == 0) {
+                    char up_char = world_map[y-1][x];
+                    char down_char = world_map[y+1][x];
+                    char right_char = world_map[y][x+1];
+                }
+                // cant look right
+                if(x == w-1) {
+                    char up_char = world_map[y-1][x];
+                    char down_char = world_map[y+1][x];
+                    char left_char = world_map[y][x-1];
+                    char right_char = world_map[y][x+1];
+                } 
+                // do normal nodes
+                char up_char = world_map[y-1][x];
+                char down_char = world_map[y+1][x];
+                char left_char = world_map[y][x-1];
+                char right_char = world_map[y][x+1];
+
+
             }
         }
 
