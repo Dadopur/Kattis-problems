@@ -4,43 +4,61 @@
 #include <map>
 using namespace std;
 
-int find_gold(vector<vector<char>>& world_map, int x, int y, int steps, int from_index ) {
+void find_aliens(map<pair<int, int>, int> alien_indexes, vector<vector<char>>& world_map, 
+    const vector<vector<char>> orig_world_map, vector<vector<int>>& dist_to_aliens, int x, int y, int steps, int from_index ) {
 
-
+    // cout << "FROM INDEX: " << from_index << endl; 
     char curr_pos = world_map[y][x];
     // Base case, we hit a wall, go back.
     if(curr_pos == '#' || curr_pos == 'V') {
-        return 0;
+        //cout << "INSIDE WALL" << endl;
+        return;
     }
 
+    //cout << "hello" << endl;
     steps++;
 
     if(curr_pos == 'A') {
+        //cout << "Found A!" << endl;
+        world_map[y][x] = 'V';
+        int curr_alien_index = alien_indexes[{x, y}];
+
+        dist_to_aliens[from_index][curr_alien_index] = steps;
+        dist_to_aliens[curr_alien_index][from_index] = steps;
+        if(from_index != 0){
+            return;
+        } else {
+
+            // for(auto hej : dist_to_aliens) {
+            //     for(auto bajs : hej) {
+            //         cout << bajs << " ";
+            //     }
+            //     cout << endl;
+            // }
+            // cout << "\n";
+            // for(auto i : world_map) {
+            //     for(auto j : i) {
+            //         cout << j;
+            //     }
+            //     cout << endl;
+            // }
+            // cout << "\n";
+            vector<vector<char>> new_map = orig_world_map;
+            find_aliens(alien_indexes, new_map, orig_world_map, dist_to_aliens, x, y+1, 0, curr_alien_index);
+            find_aliens(alien_indexes, new_map, orig_world_map, dist_to_aliens, x, y-1, 0, curr_alien_index);
+            find_aliens(alien_indexes, new_map, orig_world_map, dist_to_aliens, x+1, y, 0, curr_alien_index);
+            find_aliens(alien_indexes, new_map, orig_world_map, dist_to_aliens, x-1, y, 0, curr_alien_index);
+            return;
+        }
         // alien found. Take out where index for current alien and check if already found by the same from_index, stop. 
         // Otherwise reset steps to 0 and continue to find other aliens with a new from_index (index of current alien).
         // Do till whole tabel is full (should be done auto)
         // Do kruskals maybe to find optimal connection path.
-        gold_amout++;
     }
 
-    char down_pos = world_map[y+1][x];
-    char up_pos = world_map[y-1][x];
-    char right_pos = world_map[y][x+1];
-    char left_pos = world_map[y][x-1];
+    // cout << "BOUT TO SET SAIL, X: "<< x << " Y: " << y  << endl;
 
     // Set current place to visited to avoid loops.
-    world_map[y][x] = 'V';
-
-    // Feeling draft, trap somewhere so go back.
-    if(down_pos == 'T' || up_pos == 'T' || right_pos == 'T' || left_pos == 'T') {
-        return gold_amout;
-    }
-
-    int gold_down = find_gold(world_map, x, y+1);
-    int gold_up = find_gold(world_map, x, y-1);
-    int gold_right = find_gold(world_map, x+1, y);
-    int gold_left = find_gold(world_map, x-1, y);
-
     // for(auto i : world_map) {
     //     for(auto j : i) {
     //         cout << j;
@@ -48,8 +66,13 @@ int find_gold(vector<vector<char>>& world_map, int x, int y, int steps, int from
     //     cout << endl;
     // }
     // cout << "\n";
+    world_map[y][x] = 'V';
 
-    return gold_amout + gold_down + gold_up + gold_right + gold_left;
+    find_aliens(alien_indexes, world_map, orig_world_map, dist_to_aliens, x, y+1, steps, from_index);
+    find_aliens(alien_indexes, world_map, orig_world_map, dist_to_aliens, x, y-1, steps, from_index);
+    find_aliens(alien_indexes, world_map, orig_world_map, dist_to_aliens, x+1, y, steps, from_index);
+    find_aliens(alien_indexes, world_map, orig_world_map, dist_to_aliens, x-1, y, steps, from_index);
+
 }
 
 int main(){
@@ -57,32 +80,57 @@ int main(){
     cin.tie(NULL);
     cout.tie(NULL);
 
-    int w, h;
-    cin >> w >> h;
+    int rounds;
+    cin >> rounds;
 
-    vector<vector<char>> world_map(h, vector<char>(w));
-    map<pair<int, int>, int> aliens;
+    for(int r = 0; r < rounds; r++) {
+        int w, h;
+        cin >> w >> h;
+        cin.ignore();
+
+        vector<vector<char>> world_map(h, vector<char>(w));
+        map<pair<int, int>, int> alien_indexes;
 
 
-    string s;
-    int start_y, start_x;
-    int alien_index = 1;
-    for(int i = 0; i < h; i++) {
-        cin >> s;
-        for(int c = 0; c < w; c++) {
-            world_map[i][c] = s[c];
-            if(s[c] == 'S') {
-                start_x = c;
-                start_y = i;
-                // spara värdet så att vi kan säga att vi kommer från start dvs index 0
-            }else if (s[c] == 'A') {
-                aliens[{c, i}] = alien_index;
-                alien_index++;
+        string s;
+        int start_y, start_x;
+        int alien_index = 1;
+
+        for(int i = 0; i < h; i++) {
+            getline(cin, s);
+            for(int c = 0; c < w; c++) {
+                world_map[i][c] = s[c];
+                if(s[c] == 'S') {
+                    start_x = c;
+                    start_y = i;
+                }else if (s[c] == 'A') {
+                    alien_indexes[{c, i}] = alien_index;
+                    alien_index++;
+                }
             }
         }
-    }
-    // inklusive start
-    vector<vector<int>> dist_from_alien_to_alien(alien_index+1, vector<int>(alien_index+1));
 
-    cout << find_gold(world_map, start_x, start_y, 0, 0);
+        // for(auto baba : world_map) {
+        //     for(auto jaja : baba) {
+        //         cout << jaja;
+        //     }
+        //     cout << endl;
+        // }
+        // inklusive start
+        vector<vector<int>> dist_from_alien_to_alien(alien_index, vector<int>(alien_index, 0));
+
+        find_aliens(alien_indexes, world_map, world_map, dist_from_alien_to_alien, start_x, start_y, -1, 0);
+
+        // Do kruskalls
+        for(auto& jj : alien_indexes) {
+             cout << "first: " << (jj.first).first << " " << (jj.first).second << " sec " << jj.second<< endl;
+        }
+        cout << "\n";
+        for(auto hej : dist_from_alien_to_alien) {
+            for(auto bajs : hej) {
+                cout << bajs << " ";
+            }
+            cout << endl;
+        }
+    }
 }

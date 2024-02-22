@@ -218,7 +218,7 @@ int main(){
                     char down_char = world_map[y+1][x];
                     char left_char = world_map[y][x-1];
                     char right_char = world_map[y][x+1];
-                    
+
 
                 }
                 // cant look down
