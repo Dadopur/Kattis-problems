@@ -189,11 +189,49 @@ int main(){
     cin.tie(NULL);
     std::cout.tie(NULL);
 
+    int num_rounds;
+    cin >> num_rounds;
+    for(int r = 0; r < num_rounds; r++) {
+        int w, h;
+        cin >> w >> h;
+        Graph map = Graph(w*h, numeric_limits<int>::max());
+        vector<int> alien_node_indexes;
+        int start_index;
+        int node_index = 0;
+
+        string prev_line, curr_line, next_line;
+        for(int y_input = 0; y_input < h; y_input++) {
+            string m;
+            cin >> m;
+            if(y_input == 0) {
+                prev_line = m;
+            } 
+            else if(y_input == h-1) {
+
+            }
+            else {
+
+            }
+            for(int x_input = 0; x_input < w; x_input++) {
+                if(m[x_input] != '#' || x_input != 0 || x_input != w-1 || y_input != 0 || y_input != h-1) {
+                    if(m[x_input] == 'A') {
+                        alien_node_indexes.push_back(node_index);
+                        node_index++;
+                    }
+                    else if(m[x_input] == 'S') {
+                        start_index = node_index;
+                        node_index;
+                    }
+                }
+            }
+        }
+
+
+    }
+
     int n, m, q, s;
     while((cin >> n >> m >> q >> s) && !(n==0 && m==0 && q==0 && s==0)) {
         Graph graph = Graph(n, numeric_limits<int>::max());
-
-        //Graph graph = Graph(n, 1000000000);
         int node1, node2, weight;
         for(int i = 0; i < m; i++) {
             cin >> node1 >> node2 >> weight;
