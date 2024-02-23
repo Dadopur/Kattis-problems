@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <utility>
 #include <set>
+#include <numeric>
 using namespace std;
 
 class Node;
@@ -133,6 +134,14 @@ class Graph {
             primary_node->add_edge(edge);
         }
 
+        void graph_reset() {
+            for(Node* node : nodes) {
+                node->set_prev_node(nullptr);
+                node->set_value(numeric_limits<int>::max());
+                node->set_visited(false);
+            }
+        }
+
     private:
         vector<Node*> nodes;
 };
@@ -179,6 +188,75 @@ void dijkstra(Graph& graph, int start_node_index) {
 }
 
 /**
+ * @brief Recursive find of root node for a integer in a collection of (disjoint) sets.
+ * 
+ * @param parents Vector of all parents for each element in the collection of (disjoint) sets.
+ * @param a Integer which root is to be found.
+ * @return int of root node for element a.
+ */
+int find_root(vector<int>& parents, int a) {
+    if(parents[a] == a) {
+        // Root has itself as parent
+        return a;
+    } else {
+        // Find the root for parent of a to be used in path compression 
+        int root = find_root(parents, parents[a]);
+        parents[a] = root;
+        return root;
+    }
+}
+
+/**
+ * @brief Check if a and b are in the same union.
+ * 
+ * @param parents Vector of all parents for each element in the collection of (disjoint) sets.
+ * @param a Integer of first element to be compared with b.
+ * @param b Integer of secound element to be compared with a.
+ * @return true if a and b are in same union,
+ * @return false otherwise.
+ */
+bool find(vector<int>& parents, int a, int b) {
+    // Same root means same union
+    if(find_root(parents, a) == find_root(parents, b)){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * @brief Merge two unions (of a and b) if possible.
+ * 
+ * @param parents Vector of all parents for each element in the collection of (disjoint) sets.
+ * @param union_sizes Vector of all union sizes. 
+ * @param a Integer (element) which root union is to be merged with root union of b.
+ * @param b Integer (element) whoch root union is to be merged with root union of a.
+ */
+void merge_unions(vector<int>& parents, vector<int>& union_sizes, int a, int b) {
+    // Fint root nodes
+    int root_a = find_root(parents, a);
+    int root_b = find_root(parents, b);
+
+    // Same union - do nothing
+    if(root_a == root_b){
+        return;
+    }
+
+    // Get union sizes
+    int size_a = union_sizes[root_a];
+    int size_b = union_sizes[root_b];
+
+    // Merge smaller union into larger one -> less path compression later
+    if(size_a >= size_b) {
+        parents[root_b] = root_a;
+        union_sizes[root_a] += size_b;
+    } else {
+        parents[root_a] = root_b;
+        union_sizes[root_b] += size_a;
+    }
+}
+
+/**
  * @brief Main function that takes inputs and outputs to the consol.
  * Finds the shortest (lowest cost) path to a given node in a given graph.
  *
@@ -194,86 +272,129 @@ int main(){
     for(int r = 0; r < num_rounds; r++) {
         int w, h;
         cin >> w >> h;
-        Graph map = Graph(w*h, numeric_limits<int>::max());
+        cin.ignore();
+
         vector<int> alien_node_indexes;
-        int start_index;
-        int node_index = 0;
 
-        vector<vector<char>> world_map(h, vector<char>(w));
+
+        vector<vector<pair<int, char>>> world_map(h, vector<pair<int, char>>(w));
         string s;
-        int start_y, start_x;
+        int counting_index = 0;
+        int start_index;
         for(int i = 0; i < h; i++) {
-            cin >> s;
+            getline(cin, s);
             for(int c = 0; c < w; c++) {
-                world_map[i][c] = s[c];
+                world_map[i][c].second = s[c];
+                world_map[i][c].first = counting_index;
+                if (s[c] == 'A') {
+                    alien_node_indexes.push_back(counting_index);
+                }
+                else if(s[c] == 'S') {
+                    start_index = counting_index;
+                }
+                counting_index++;
             }
         }
 
-        int node_index;
-        for(int y = 0; y < h; y++) {
-            for(int x = 0; x < w; x++) {
-                char curr_char = world_map[y][x];
-                // cant loop up
-                if(y == 0) {
-                    char down_char = world_map[y+1][x];
-                    char left_char = world_map[y][x-1];
-                    char right_char = world_map[y][x+1];
+        // TESTING
+        for(auto baba : world_map) {
+            for(auto jaja : baba) {
+                cout << jaja.second;
+            }
+            cout << endl;
+        }
 
+        cout << "START INDEX " << start_index << endl;
+        Graph graph_map = Graph(w*h, numeric_limits<int>::max());
 
-                }
-                // cant look down
-                if(y == h-1) {
-                    char up_char = world_map[y-1][x];
-                    char left_char = world_map[y][x-1];
-                    char right_char = world_map[y][x+1];
-                }
-                // cant look left
-                if(x == 0) {
-                    char up_char = world_map[y-1][x];
-                    char down_char = world_map[y+1][x];
-                    char right_char = world_map[y][x+1];
-                }
-                // cant look right
-                if(x == w-1) {
-                    char up_char = world_map[y-1][x];
-                    char down_char = world_map[y+1][x];
-                    char left_char = world_map[y][x-1];
-                    char right_char = world_map[y][x+1];
-                } 
+        for(int y = 1; y < h-1; y++) {
+            cout << endl;
+            for(int x = 1; x < w-1; x++) {
+                char curr_char = world_map[y][x].second;
+                cout << curr_char;
+                int curr_index = world_map[y][x].first;
                 // do normal nodes
-                char up_char = world_map[y-1][x];
-                char down_char = world_map[y+1][x];
-                char left_char = world_map[y][x-1];
-                char right_char = world_map[y][x+1];
+                if(curr_char == '#') {
+                    continue;
+                }
 
+                char up_char = world_map[y-1][x].second;
+                char up_index = world_map[y-1][x].first;
+                char down_char = world_map[y+1][x].second;
+                char down_index = world_map[y+1][x].first;
+                char left_char = world_map[y][x-1].second;
+                char left_index = world_map[y-1][x-1].first;
+                char right_char = world_map[y][x+1].second;
+                char right_index = world_map[y-1][x+1].first;
+
+                if(up_char != '#') {
+                    graph_map.add_one_way_edge(curr_index, up_index, 1);
+                }
+                if(down_char != '#') {
+                    graph_map.add_one_way_edge(curr_index, down_index, 1);
+                }
+                if(left_char != '#') {
+                    graph_map.add_one_way_edge(curr_index, left_index, 1);
+                }
+                if(right_char != '#') {
+                    graph_map.add_one_way_edge(curr_index, right_index, 1);
+                }
 
             }
         }
 
+        dijkstra(graph_map, start_index);
 
-    }
-
-    int n, m, q, s;
-    while((cin >> n >> m >> q >> s) && !(n==0 && m==0 && q==0 && s==0)) {
-        Graph graph = Graph(n, numeric_limits<int>::max());
-        int node1, node2, weight;
-        for(int i = 0; i < m; i++) {
-            cin >> node1 >> node2 >> weight;
-            graph.add_one_way_edge(node1, node2, weight);
+        for(Node* node : graph_map.get_nodes()) {
+            cout << "node index: " << node->get_index() << " " << node->get_value() << endl;
         }
+        //cout << endl;
 
-        dijkstra(graph, s);
+        // Start value fist at start, reset, then first A, next A osv.
+        int distances_length = alien_node_indexes.size()+1;
 
-        int query;
-        for(int k = 0; k < q; k++) {
-            cin >> query;
-            Node* q_node = graph.get_node(query);
-            int value = q_node->get_value();
-            if(value == numeric_limits<int>::max()) {
-                std::cout << "Impossible" << "\n";
-            }else {
-                std::cout << q_node->get_value() << "\n";
+        //vector<vector<int>> dist_to_aliens(distances_length, vector<int>(distances_length, -1));
+
+
+        // Kruskals
+        vector<int> parents(distances_length);
+        iota(parents.begin(), parents.end(), 0);
+        vector<int> union_sizes(distances_length, 1);
+
+        // set of edges: cost, (from - to)
+        set<pair<int, pair<int, int>>> edges;
+        for(int from_index = -1; from_index < distances_length; from_index++) {
+            int to_index = from_index +1;
+            if(from_index == -1) {
+                dijkstra(graph_map, start_index);
+            } else {
+                graph_map.graph_reset();
+                dijkstra(graph_map, alien_node_indexes[from_index]);
+            }
+            while(to_index < distances_length) {
+                //int cost = dist_to_aliens[from_index][to_index];
+                int cost = graph_map.get_node(alien_node_indexes[to_index])->get_value();
+                edges.insert({cost, {from_index+1, to_index+1}});
+                //cout << cost << endl;
+                to_index++;
             }
         }
+        cout << "NUM EDGES: " << edges.size();
+        int total_path_cost = 0;
+        while(!edges.empty()) {
+            pair<int, pair<int, int>> new_edge = *edges.begin();
+            edges.erase(new_edge);
+            int first_node = (new_edge.second).first;
+            int second_node = (new_edge.second).second;
+            int cost = new_edge.first;
+            //not in set, check both from and to index
+            if(!find(parents, first_node, second_node)) {
+                total_path_cost += cost;
+                merge_unions(parents, union_sizes, first_node, second_node);
+                // add to set (both of the nodes), add cost to total_path_cost
+            }
+        }
+        cout << total_path_cost << endl;
     }
+
 }

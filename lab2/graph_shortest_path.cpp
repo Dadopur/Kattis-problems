@@ -133,6 +133,14 @@ class Graph {
             primary_node->add_edge(edge);
         }
 
+        void graph_reset() {
+            for(Node* node : nodes) {
+                node->set_prev_node(nullptr);
+                node->set_value(numeric_limits<int>::max());
+                node->set_visited(false);
+            }
+        }
+
     private:
         vector<Node*> nodes;
 };
