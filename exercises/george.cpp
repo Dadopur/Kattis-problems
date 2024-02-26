@@ -1,3 +1,4 @@
+
 /**
  * @file graph_shortest_path.cpp
  * @author Daniel Purgal, danpu323 (danpu323@student.liu.se)
@@ -196,31 +197,24 @@ int main(){
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
     std::cout.tie(NULL);
+    
+    int num_intersections, num_streets;
+    cin >> num_intersections >> num_streets;
 
-    int n, m, q, s;
-    while((cin >> n >> m >> q >> s) && !(n==0 && m==0 && q==0 && s==0)) {
-        Graph graph = Graph(n, numeric_limits<int>::max());
+    int luka_start, luka_end, diff_start, num_georg_inters;
+    Graph town = Graph(num_intersections, numeric_limits<int>::max());
 
-        // Make edges
-        int node1, node2, weight;
-        for(int i = 0; i < m; i++) {
-            cin >> node1 >> node2 >> weight;
-            graph.add_one_way_edge(node1, node2, weight);
-        }
-
-        dijkstra(graph, s);
-
-        // Prints
-        int query;
-        for(int k = 0; k < q; k++) {
-            cin >> query;
-            Node* q_node = graph.get_node(query);
-            int value = q_node->get_value();
-            if(value == numeric_limits<int>::max()) {
-                std::cout << "Impossible" << "\n";
-            }else {
-                std::cout << q_node->get_value() << "\n";
-            }
-        }
+    vector<int> george_intersections(num_georg_inters);
+    int intersection;
+    for(int g = 0; g < num_georg_inters; g++) {
+        cin >> intersection;
+        george_intersections[g] = intersection;
     }
+
+    int node1, node2, weight;
+    for(int street = 0; street < num_streets; street++) {
+        cin >> node1 >> node2 >> weight;
+        town.add_one_way_edge(node1, node2, weight);
+    }
+
 }
