@@ -149,7 +149,6 @@ void dijkstra(Graph& graph, int start_node_index) {
 
     Node* start_node = graph.get_node(start_node_index);
     start_node->set_value(0);
-    //graph.get_node(2)->set_value(10);
 
     set<pair<int, Node*>> prio_queue;
     prio_queue.insert({start_node->get_value(), start_node});

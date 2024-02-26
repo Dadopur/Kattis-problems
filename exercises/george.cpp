@@ -23,6 +23,8 @@ struct Edge {
     // Member variables
     Node* connection_node;
     int edge_cost;
+    bool george_visiting;
+    int george_arrival_time;
 };
 
 class Node {
@@ -146,12 +148,11 @@ class Graph {
         vector<Node*> nodes;
 };
 
-void dijkstra(Graph& graph, int start_node_index) {
+void dijkstra(Graph& graph, int start_node_index, int start_time) {
 
     Node* start_node = graph.get_node(start_node_index);
-    start_node->set_value(0);
-    //graph.get_node(2)->set_value(10);
-
+    start_node->set_value(start_time);
+ 
     set<pair<int, Node*>> prio_queue;
     prio_queue.insert({start_node->get_value(), start_node});
 
@@ -170,14 +171,25 @@ void dijkstra(Graph& graph, int start_node_index) {
 
         for(Edge* edge : curr_node->get_edges()) {
             Node* edge_node = edge->connection_node; 
-            int cost = edge->edge_cost;
 
             if(edge_node->is_visited()) {
                 continue;
             }
 
+            int cost;
+            int curr_node_value = curr_node->get_value();
+            if(edge->george_visiting) {
+                if(curr_node_value < edge->george_arrival_time || curr_node_value >= edge->george_arrival_time + edge->edge_cost) {
+                    cost = edge->edge_cost;
+                } else {
+                    cost = edge->george_arrival_time + ((edge->edge_cost) * 2) - curr_node_value;
+                }
+            } else {
+                cost = edge->edge_cost;
+            }
+
             int curr_value = edge_node->get_value();
-            int upd_value = curr_node->get_value() + cost;
+            int upd_value = curr_node_value + cost;
             if(upd_value < curr_value) {
                 edge_node->set_value(upd_value);
                 edge_node->set_prev_node(curr_node);
@@ -202,19 +214,47 @@ int main(){
     cin >> num_intersections >> num_streets;
 
     int luka_start, luka_end, diff_start, num_georg_inters;
+    cin >> luka_start >> luka_end >> diff_start >> num_georg_inters;
     Graph town = Graph(num_intersections, numeric_limits<int>::max());
-
     vector<int> george_intersections(num_georg_inters);
+
     int intersection;
     for(int g = 0; g < num_georg_inters; g++) {
         cin >> intersection;
+        intersection--;
         george_intersections[g] = intersection;
     }
 
     int node1, node2, weight;
     for(int street = 0; street < num_streets; street++) {
         cin >> node1 >> node2 >> weight;
+        node1--;
+        node2--;
         town.add_one_way_edge(node1, node2, weight);
+        town.add_one_way_edge(node2, node1, weight);
     }
 
+    int george_visiting_time = 0;
+    for(int geroge_visiting_inde = 0; geroge_visiting_inde < num_georg_inters-1; geroge_visiting_inde++) {
+        int george1 = george_intersections[geroge_visiting_inde];
+        int george2 = george_intersections[geroge_visiting_inde+1];
+        for(Edge* edge : town.get_node(george1)->get_edges()) {
+            if(edge->connection_node->get_index() == george2) {
+                edge->george_visiting = true;
+                edge->george_arrival_time = george_visiting_time;
+                for(Edge* back_edge : edge->connection_node->get_edges()) {
+                    if(back_edge->connection_node->get_index() == george1) {
+                        back_edge->george_visiting = true;
+                        back_edge->george_arrival_time = george_visiting_time;
+                    }
+                }
+                george_visiting_time += edge->edge_cost;
+            }
+        }
+    }
+
+    dijkstra(town, luka_start-1, diff_start);
+
+    int end_time = town.get_node(luka_end-1)->get_value();
+    cout << (end_time-diff_start) << "\n";
 }
