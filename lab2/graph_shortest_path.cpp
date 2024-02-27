@@ -1,7 +1,7 @@
 /**
  * @file graph_shortest_path.cpp
  * @author Daniel Purgal, danpu323 (danpu323@student.liu.se)
- * @brief
+ * @brief Program is made to find the shortest path between two nodes using dijstras algorithm.
  * @version 0.1
  * @date 2024-02-21
  *
@@ -16,6 +16,9 @@ using namespace std;
 
 class Node;
 
+/**
+ * @brief Edge between two nodes. Only a one way edge with a set cost.
+ */
 struct Edge {
     // Constructor
     Edge(Node* const node, const int cost) : connection_node(node), edge_cost(cost) {}
@@ -24,11 +27,22 @@ struct Edge {
     int edge_cost;
 };
 
+/**
+ * @brief Node class containing all necessary information for most basic search algorithms.
+ */
 class Node {
     public:
-        // Constructor
+        /**
+         * @brief Construct a new Node object.
+         * 
+         * @param in_index Unique index of node as it is in the graph.
+         * @param in_value Initial (start) value of node.
+         */
         Node(const int in_index, int in_value) : index(in_index), value(in_value), visited(false) {}
-        // Destructor
+        
+        /**
+         * @brief Destroy the Node object.
+         */
         ~Node(){
             for(auto edge : edges){
                 delete edge;
@@ -56,6 +70,9 @@ class Node {
             return edges[edge_index];
         }
 
+        Node* get_prev_node() {
+            return prev_node;
+        }
         // Setters
         // ================================
         void set_value(int const new_value) {
@@ -83,6 +100,10 @@ class Node {
         vector<Edge*> edges;
 };
 
+/**
+ * @brief 
+ * 
+ */
 class Graph {
     public:
         /**
@@ -91,9 +112,11 @@ class Graph {
          * @param num_nodes Number of nodes to be initialized in the graph.
          * @param init_value Int of the initial values for all nodes.
          */
-        Graph(int const num_nodes, int const init_value){
+        Graph(int const num_nodes, int const init_value, int const start_index) : start_index(start_index) {
             for(int i = 0; i < num_nodes; i++) {
-                nodes.push_back(new Node{i, init_value});
+                Node* new_node = new Node{i, init_value};
+                nodes.push_back(new_node);
+                new_node->set_prev_node(nullptr);
             }
         }
 
@@ -114,8 +137,45 @@ class Graph {
             return nodes;
         }
 
+        int get_start_index() {
+            return start_index;
+        }
+
         /**
-         * @brief Adds a new connection between two nodes with a given weight cost.
+         * @brief Get path from start node to given end node if it exists. 
+         * 
+         * @param end_node_index Index of node to get path to.
+         * @return vector<Node*> with all visited nodes to the end node, (empty if not reached or error).
+         */
+        vector<Node*> get_path(int end_node_index) {
+            vector<Node*> return_path;
+
+            // Given index is out of range (no node of that index) -> return no path
+            if(end_node_index >= get_nodes().size()) {
+                return return_path;
+            }
+            
+            Node* end_node = get_node(end_node_index);
+            Node* start_node = get_node(get_start_index());
+            Node* current_prev = end_node->get_prev_node();
+
+            // Only add end node if it has been visited (has a path to start)
+            if(end_node->is_visited()) {
+                return_path.push_back(end_node);
+            }
+            
+            // Follow path back to start
+            while(current_prev != nullptr) {
+                return_path.push_back(current_prev);
+                current_prev = current_prev->get_prev_node();
+            }
+            // Reverse to have list in right order: start node -> end node.
+            reverse(return_path.begin(), return_path.end());
+            return return_path;
+        }
+
+        /**
+         * @brief Add new connection between two nodes with a given weight cost.
          *
          * @param node1 Index of first node to be connected.
          * @param node2 Index of second node to be connected.
@@ -133,19 +193,32 @@ class Graph {
             primary_node->add_edge(edge);
         }
 
-        void graph_reset() {
+        /**
+         * @brief Reset all nodes to standard values and resets starting node to provided index.
+         */
+        void graph_reset(int new_start_index) {
             for(Node* node : nodes) {
                 node->set_prev_node(nullptr);
                 node->set_value(numeric_limits<int>::max());
                 node->set_visited(false);
             }
+            start_index = new_start_index;
         }
 
     private:
         vector<Node*> nodes;
+        int start_index;
 };
 
+/**
+ * @brief Find shortest path from given start node to all other nodes using dijkstras algorithm. 
+ * 
+ * @param graph Graph with all nodes and edges included. 
+ * @param start_node_index Index of staring node.
+ */
 void dijkstra(Graph& graph, int start_node_index) {
+    // Reset graph to be sure it's a clean search
+    graph.graph_reset(start_node_index);
 
     Node* start_node = graph.get_node(start_node_index);
     start_node->set_value(0);
@@ -160,26 +233,29 @@ void dijkstra(Graph& graph, int start_node_index) {
 
         Node* curr_node = curr_cost_node.second;
 
+        // Already visited this node.
         if(curr_node->is_visited()) {
             continue;
         } else {
             curr_node->set_visited(true);
         }
 
+        // Go through all edges to update neighbour nodes.
         for(Edge* edge : curr_node->get_edges()) {
-            Node* edge_node = edge->connection_node; 
-            int cost = edge->edge_cost;
+            Node* neighbour_node = edge->connection_node; 
+            int travel_cost = edge->edge_cost;
 
-            if(edge_node->is_visited()) {
+            if(neighbour_node->is_visited()) {
                 continue;
             }
 
-            int curr_value = edge_node->get_value();
-            int upd_value = curr_node->get_value() + cost;
-            if(upd_value < curr_value) {
-                edge_node->set_value(upd_value);
-                edge_node->set_prev_node(curr_node);
-                prio_queue.insert({upd_value, edge_node});
+            // Check if it is worth to go this new path
+            int neighbour_value = neighbour_node->get_value();
+            int upd_value = curr_node->get_value() + travel_cost;
+            if(upd_value < neighbour_value) {
+                neighbour_node->set_value(upd_value);
+                neighbour_node->set_prev_node(curr_node);
+                prio_queue.insert({upd_value, neighbour_node});
             }
         }
     }
@@ -198,9 +274,9 @@ int main(){
 
     int n, m, q, s;
     while((cin >> n >> m >> q >> s) && !(n==0 && m==0 && q==0 && s==0)) {
-        Graph graph = Graph(n, numeric_limits<int>::max());
 
-        // Make edges
+        // Make graph and connect edges
+        Graph graph = Graph(n, numeric_limits<int>::max(), s);
         int node1, node2, weight;
         for(int i = 0; i < m; i++) {
             cin >> node1 >> node2 >> weight;
@@ -208,6 +284,18 @@ int main(){
         }
 
         dijkstra(graph, s);
+
+        /* 
+        Code to print path from start node to given index:
+        
+        int path_to_index = 2;
+
+        vector<Node*> test = graph.get_path(path_to_index);
+        for(Node* node : test) {
+            cout << node->get_index() << " ";
+        }cout << endl;
+        */
+
 
         // Prints
         int query;
