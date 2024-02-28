@@ -1,9 +1,16 @@
-
+/**
+ * @file minimal_spanning_tree.cpp
+ * @author Daniel Purgal, danpu323 (danpu323@student.liu.se)
+ * @brief Find minimal spanning tree using kruskals algorithm (unsing union search).
+ * @version 0.1
+ * @date 2024-02-28
+ */
 // Imports
 #include <iostream>
 #include <vector>
 #include <numeric>
 #include <set>
+#include <algorithm>
 using namespace std;
 
 /**
@@ -75,9 +82,41 @@ void merge_unions(vector<int>& parents, vector<int>& union_sizes, int a, int b) 
     }
 }
 
+/**
+ * @brief Find if edge1 is in lexicographic order compared with edge2. (Comparitor).
+ * 
+ * @param edge1 to be compared to edge2
+ * @param edge2 to be compared with edge1
+ * @return true if edge1 is "smaller" than edge2 in lexicographic order 
+ * @return false otherwise
+ */
+bool compare_lexicographic(pair<int, int> edge1, pair<int, int> edge2) {
+    // First node is smaller
+    if(edge1.first < edge2.first) {
+        return true;
+    }
+    
+    // Same node, look at secound node
+    if (edge1.first == edge2.first) {
+        if(edge1.second < edge2.second) {
+            return true;
+        }
+    }
 
+    // Base case, edge2 is samller
+    return false;
+}
+
+/**
+ * @brief Find what edges make minimal spanning tree (least cost) if any exist and its cost, 
+ * using a set of edges and kruskals algorithm. 
+ * 
+ * @param edges Edges in given graph.
+ * @param num_nodes Number of nodes in the graph.
+ * @return pair<int, vector<pair<int, int>>>: total_tree_cost, edges in tree (lexicographic order). 
+ * Vector will be length 1 with (-1, -1) if no tree is made.
+ */
 pair<int, vector<pair<int, int>>> kruskals(set<pair<int, pair<int, int>>>& edges, int num_nodes) {
- // @return pair<int, vector<pair<int, int>>>: total_tree_cost, edges in tree. Vector will be length 1 with (-1, -1) if no tree is made.
 
     // Initialize parent nodes and sizes of disjoint unions
     vector<int> parents(num_nodes);
@@ -96,7 +135,11 @@ pair<int, vector<pair<int, int>>> kruskals(set<pair<int, pair<int, int>>>& edges
         if(!find(parents, first_node, second_node)) {
             // add to set (both of the nodes), add cost to total_path_cost
             merge_unions(parents, union_sizes, first_node, second_node);
-            connections_made.push_back({first_node, second_node});
+            if(first_node < second_node) {
+                connections_made.push_back({first_node, second_node});
+            } else {
+                connections_made.push_back({second_node, first_node});
+            }
             total_path_cost += cost;
         }
     }
@@ -107,12 +150,14 @@ pair<int, vector<pair<int, int>>> kruskals(set<pair<int, pair<int, int>>>& edges
         return {-1, vector<pair<int, int>>(1, {-1, -1})};
     }
     
+    // Sort in lexicographic order
+    sort(connections_made.begin(), connections_made.end(), compare_lexicographic);
     return {total_path_cost, connections_made};
 }
 
 
 /**
- * @brief 
+ * @brief Execute program (minimal spanning tree) and takes inputs/ outputs from console.
  * 
  * @return int 
  */
