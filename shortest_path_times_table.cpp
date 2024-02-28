@@ -22,10 +22,13 @@ class Node;
  */
 struct Edge {
     // Constructor
-    Edge(Node* const node, const int cost) : connection_node(node), edge_cost(cost) {}
+    Edge(Node* const node, const int cost, const int start, const int upd_time) : 
+    connection_node(node), traverse_time(cost), start_time(start), updating_time(upd_time) {}
     // Member variables
     Node* connection_node;
-    int edge_cost;
+    int traverse_time;
+    int start_time;
+    int updating_time;
 };
 
 /**
@@ -182,13 +185,13 @@ class Graph {
          * @param node2 Index of second node to be connected.
          * @param cost Path cost for the connection (edge).
          */
-        void add_one_way_edge(int const node1, int const node2, int const cost) {
+        void add_one_way_edge(int const node1, int const node2, int const cost, int const start, int const upd_time) {
             // Get nodes to be connected
             Node* primary_node = nodes[node1];
             Node* secundary_node = nodes[node2];
 
             // Make new edge
-            Edge* edge = new Edge{secundary_node, cost};
+            Edge* edge = new Edge{secundary_node, cost, start, upd_time};
 
             // Add new edges to the nodes
             primary_node->add_edge(edge);
@@ -244,15 +247,28 @@ void dijkstra(Graph& graph, int start_node_index) {
         // Go through all edges to update neighbour nodes.
         for(Edge* edge : curr_node->get_edges()) {
             Node* neighbour_node = edge->connection_node; 
-            int travel_cost = edge->edge_cost;
 
             if(neighbour_node->is_visited()) {
                 continue;
             }
 
+            int current_cost = curr_node->get_value();
+            int upd_value;
+            if(current_cost > edge->start_time && edge->updating_time == 0 ) {
+                upd_value = numeric_limits<int>::max();
+            }
+            else {
+                int wait_time;
+                if(current_cost < edge->start_time) {
+                    wait_time =  edge->start_time - current_cost;
+                } else {
+                    wait_time = edge->updating_time - ((current_cost -edge->start_time) % edge->updating_time);
+                }
+                upd_value = current_cost + edge->traverse_time + wait_time;
+            }
+
             // Check if it is worth to go this new path
             int neighbour_value = neighbour_node->get_value();
-            int upd_value = curr_node->get_value() + travel_cost;
             if(upd_value < neighbour_value) {
                 neighbour_node->set_value(upd_value);
                 neighbour_node->set_prev_node(curr_node);
@@ -278,10 +294,10 @@ int main(){
 
         // Make graph and connect edges
         Graph graph = Graph(n, numeric_limits<int>::max(), s);
-        int node1, node2, weight;
+        int node1, node2, start, upd_time, weight;
         for(int i = 0; i < m; i++) {
-            cin >> node1 >> node2 >> weight;
-            graph.add_one_way_edge(node1, node2, weight);
+            cin >> node1 >> node2 >> start >> upd_time >> weight;
+            graph.add_one_way_edge(node1, node2, start, upd_time, weight);
         }
 
         dijkstra(graph, s);
