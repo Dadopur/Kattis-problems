@@ -2,7 +2,8 @@
 /**
  * @file graph_shortest_path.cpp
  * @author Daniel Purgal, danpu323 (danpu323@student.liu.se)
- * @brief Program is made to find the shortest path between two nodes using dijstras algorithm.
+ * @brief Program is made to find the shortest path between two nodes (edge has timestable) using dijstras algorithm.
+ * 
  * @version 0.1
  * @date 2024-02-21
  *
@@ -22,13 +23,37 @@ class Node;
  */
 struct Edge {
     // Constructor
-    Edge(Node* const node, const int cost, const int start, const int upd_time) : 
-    connection_node(node), traverse_time(cost), start_time(start), updating_time(upd_time) {}
+    Edge(Node* const node, const int traverse_time, const int start_time, const int departure_time) : 
+    connection_node(node), traverse_time(traverse_time), start_time(start_time), departure_time(departure_time) {}
     // Member variables
     Node* connection_node;
     int traverse_time;
     int start_time;
-    int updating_time;
+    int departure_time;
+
+    /**
+     * @brief Get travel time (both wait for departure and for traverseing).
+     * 
+     * @param current_time of node.
+     * @return int if total travel time.
+     */
+    int get_travel_time(int current_time) {
+        if(current_time > start_time && departure_time == 0 ) {
+            return numeric_limits<int>::max();
+        }else {
+            int wait_time;
+            if(current_time < start_time) {
+                wait_time =  start_time - current_time;
+            } 
+            else if(((current_time - start_time) % departure_time) == 0) {
+                wait_time = 0;
+            } 
+            else {
+                wait_time = departure_time - ((current_time - start_time) % departure_time);
+            }
+            return current_time + traverse_time + wait_time;
+        }
+    }
 };
 
 /**
@@ -185,13 +210,13 @@ class Graph {
          * @param node2 Index of second node to be connected.
          * @param cost Path cost for the connection (edge).
          */
-        void add_one_way_edge(int const node1, int const node2, int const start, int const upd_time, int const cost) {
+        void add_one_way_edge(int const node1, int const node2, int const start_time, int const departure_time, int const traverse_time) {
             // Get nodes to be connected
             Node* primary_node = nodes[node1];
             Node* secundary_node = nodes[node2];
 
             // Make new edge
-            Edge* edge = new Edge{secundary_node, cost, start, upd_time};
+            Edge* edge = new Edge{secundary_node, traverse_time, start_time, departure_time};
 
             // Add new edges to the nodes
             primary_node->add_edge(edge);
@@ -252,30 +277,16 @@ void dijkstra_timetable(Graph& graph, int start_node_index) {
                 continue;
             }
 
-            int current_cost = curr_node->get_value();
-            int upd_value;
+            int current_time = curr_node->get_value();
+            // Get new time if waiting and traversing through edge
+            int upd_time = edge->get_travel_time(current_time);
 
-            if(current_cost > edge->start_time && edge->updating_time == 0 ) {
-                upd_value = numeric_limits<int>::max();
-            }else {
-                int wait_time;
-                if(current_cost < edge->start_time) {
-                    wait_time =  edge->start_time - current_cost;
-                } 
-                else if(((current_cost - edge->start_time) % edge->updating_time) == 0) {
-                    wait_time = 0;
-                } 
-                else {
-                    wait_time = edge->updating_time - ((current_cost - edge->start_time) % edge->updating_time);
-                }
-                upd_value = current_cost + edge->traverse_time + wait_time;
-            }
             // Check if it is worth to go this new path
             int neighbour_value = neighbour_node->get_value();
-            if(upd_value < neighbour_value) {
-                neighbour_node->set_value(upd_value);
+            if(upd_time < neighbour_value) {
+                neighbour_node->set_value(upd_time);
                 neighbour_node->set_prev_node(curr_node);
-                prio_queue.insert({upd_value, neighbour_node});
+                prio_queue.insert({upd_time, neighbour_node});
             }
         }
     }
@@ -283,7 +294,8 @@ void dijkstra_timetable(Graph& graph, int start_node_index) {
 
 /**
  * @brief Main function that takes inputs and outputs to the consol.
- * Finds the shortest (lowest cost) path to a given node in a given graph.
+ * Finds the shortest (lowest time) path to a given node in a given graph
+ * using timetables.
  *
  * @return int
  */
@@ -297,16 +309,16 @@ int main(){
 
         // Make graph and connect edges
         Graph graph = Graph(n, numeric_limits<int>::max(), s);
-        int node1, node2, start, upd_time, weight;
+        int node1, node2, start_time, departure_time, traverse_time;
         for(int i = 0; i < m; i++) {
-            cin >> node1 >> node2 >> start >> upd_time >> weight;
-            graph.add_one_way_edge(node1, node2, start, upd_time, weight);
+            cin >> node1 >> node2 >> start_time >> departure_time >> traverse_time;
+            graph.add_one_way_edge(node1, node2, start_time, departure_time, traverse_time);
         }
 
         dijkstra_timetable(graph, s);
 
         /* 
-        Code to print path from start node to given index:
+        Code to print path from start node to given index (instead of giving node*):
         
         int path_to_index = 2;
 

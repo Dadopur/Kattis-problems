@@ -251,11 +251,11 @@ void dijkstra(Graph& graph, int start_node_index) {
 
             // Check if it is worth to go this new path
             int neighbour_value = neighbour_node->get_value();
-            int upd_value = curr_node->get_value() + travel_cost;
-            if(upd_value < neighbour_value) {
-                neighbour_node->set_value(upd_value);
+            int upd_cost = curr_node->get_value() + travel_cost;
+            if(upd_cost < neighbour_value) {
+                neighbour_node->set_value(upd_cost);
                 neighbour_node->set_prev_node(curr_node);
-                prio_queue.insert({upd_value, neighbour_node});
+                prio_queue.insert({upd_cost, neighbour_node});
             }
         }
     }
