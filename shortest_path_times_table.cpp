@@ -185,7 +185,7 @@ class Graph {
          * @param node2 Index of second node to be connected.
          * @param cost Path cost for the connection (edge).
          */
-        void add_one_way_edge(int const node1, int const node2, int const cost, int const start, int const upd_time) {
+        void add_one_way_edge(int const node1, int const node2, int const start, int const upd_time, int const cost) {
             // Get nodes to be connected
             Node* primary_node = nodes[node1];
             Node* secundary_node = nodes[node2];
@@ -220,7 +220,7 @@ class Graph {
  * @param graph Graph with all nodes and edges included. 
  * @param start_node_index Index of staring node.
  */
-void dijkstra(Graph& graph, int start_node_index) {
+void dijkstra_timetable(Graph& graph, int start_node_index) {
     // Reset graph to be sure it's a clean search
     graph.graph_reset(start_node_index);
 
@@ -240,9 +240,9 @@ void dijkstra(Graph& graph, int start_node_index) {
         // Already visited this node.
         if(curr_node->is_visited()) {
             continue;
-        } else {
-            curr_node->set_visited(true);
         }
+
+        curr_node->set_visited(true);
 
         // Go through all edges to update neighbour nodes.
         for(Edge* edge : curr_node->get_edges()) {
@@ -254,19 +254,22 @@ void dijkstra(Graph& graph, int start_node_index) {
 
             int current_cost = curr_node->get_value();
             int upd_value;
+
             if(current_cost > edge->start_time && edge->updating_time == 0 ) {
                 upd_value = numeric_limits<int>::max();
-            }
-            else {
+            }else {
                 int wait_time;
                 if(current_cost < edge->start_time) {
                     wait_time =  edge->start_time - current_cost;
-                } else {
-                    wait_time = edge->updating_time - ((current_cost -edge->start_time) % edge->updating_time);
+                } 
+                else if(((current_cost - edge->start_time) % edge->updating_time) == 0) {
+                    wait_time = 0;
+                } 
+                else {
+                    wait_time = edge->updating_time - ((current_cost - edge->start_time) % edge->updating_time);
                 }
                 upd_value = current_cost + edge->traverse_time + wait_time;
             }
-
             // Check if it is worth to go this new path
             int neighbour_value = neighbour_node->get_value();
             if(upd_value < neighbour_value) {
@@ -300,7 +303,7 @@ int main(){
             graph.add_one_way_edge(node1, node2, start, upd_time, weight);
         }
 
-        dijkstra(graph, s);
+        dijkstra_timetable(graph, s);
 
         /* 
         Code to print path from start node to given index:
