@@ -3,7 +3,10 @@
  * @file graph_shortest_path.cpp
  * @author Daniel Purgal, danpu323 (danpu323@student.liu.se)
  * @brief Program is made to find the shortest path between two nodes (edge has timestable) using dijstras algorithm.
- * 
+ * The time complexity for djikstras (with a prio queue/set) is O((E+V)log(V)) where E is number of edges and V
+ * is number of nodes. This is because a set (prio queue) has insert time complexity O(log(N)), and we will insert all the nodes
+ * which will take O(Vlog(V)), and worst case one node has all edges that will need to update costs in the set: O(Elog(V)). When
+ * combining it will take O((E+V)log(V)).
  * @version 0.1
  * @date 2024-02-21
  *
