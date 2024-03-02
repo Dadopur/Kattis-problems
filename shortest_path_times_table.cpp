@@ -307,18 +307,19 @@ int main(){
     cin.tie(NULL);
     std::cout.tie(NULL);
 
-    int n, m, q, s;
-    while((cin >> n >> m >> q >> s) && !(n==0 && m==0 && q==0 && s==0)) {
+    int num_nodes, num_edges, queries, start_node_index;
+    while((cin >> num_nodes >> num_edges >> queries >> start_node_index) 
+        && !(num_nodes==0 && num_edges==0 && queries==0 && start_node_index==0)) {
 
         // Make graph and connect edges
-        Graph graph = Graph(n, numeric_limits<int>::max(), s);
+        Graph graph = Graph(num_nodes, numeric_limits<int>::max(), start_node_index);
         int node1, node2, start_time, departure_time, traverse_time;
-        for(int i = 0; i < m; i++) {
+        for(int i = 0; i < num_edges; i++) {
             cin >> node1 >> node2 >> start_time >> departure_time >> traverse_time;
             graph.add_one_way_edge(node1, node2, start_time, departure_time, traverse_time);
         }
 
-        dijkstra_timetable(graph, s);
+        dijkstra_timetable(graph, start_node_index);
 
         /* 
         Code to print path from start node to given index (instead of giving node*):
@@ -334,7 +335,7 @@ int main(){
 
         // Prints
         int query;
-        for(int k = 0; k < q; k++) {
+        for(int k = 0; k < queries; k++) {
             cin >> query;
             Node* q_node = graph.get_node(query);
             int value = q_node->get_value();

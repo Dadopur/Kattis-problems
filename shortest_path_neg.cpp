@@ -1,13 +1,11 @@
 /**
  * @file graph_shortest_path.cpp
  * @author Daniel Purgal, danpu323 (danpu323@student.liu.se)
- * @brief Program is made to find the shortest path between two nodes using dijstras algorithm.
- * The time complexity for djikstras (with a prio queue/set) is O((E+V)log(V)) where E is number of edges and V
- * is number of nodes. This is because a set (prio queue) has insert time complexity O(log(N)), and we will insert all the nodes
- * which will take O(Vlog(V)), and worst case one node has all edges that will need to update costs in the set: O(Elog(V)). When
- * combining it will take O((E+V)log(V)).
+ * @brief Program is made to find the shortest path between two nodes using Bellman-Fords algorithm.
+ * The time complexity for Bellmans is O(V*E) where E is number of edges and V
+ * is number of nodes. This is because all E edges are checked V-1 times.
  * @version 0.1
- * @date 2024-02-21
+ * @date 2024-03-02
  *
  */
 #include <iostream>
@@ -25,9 +23,10 @@ class Node;
  */
 struct Edge {
     // Constructor
-    Edge(Node* const node, const int cost) : connection_node(node), edge_cost(cost) {}
+    Edge(Node* const node1, Node* const node2, const int cost) : from_node(node1), to_node(node2), edge_cost(cost) {}
     // Member variables
-    Node* connection_node;
+    Node* from_node;
+    Node* to_node;
     int edge_cost;
 };
 
@@ -141,9 +140,14 @@ class Graph {
             return nodes;
         }
 
+        vector<Edge*> get_edges() {
+            return edges;
+        }
+
         int get_start_index() {
             return start_index;
         }
+
 
         /**
          * @brief Get path from start node to given end node if it exists. 
@@ -191,10 +195,11 @@ class Graph {
             Node* secundary_node = nodes[node2];
 
             // Make new edge
-            Edge* edge = new Edge{secundary_node, cost};
+            Edge* edge = new Edge{primary_node, secundary_node, cost};
 
             // Add new edges to the nodes
             primary_node->add_edge(edge);
+            edges.push_back(edge);
         }
 
         /**
@@ -211,63 +216,73 @@ class Graph {
 
     private:
         vector<Node*> nodes;
+        vector<Edge*> edges;
         int start_index;
 };
 
 /**
- * @brief Find shortest path from given start node to all other nodes using dijkstras algorithm. 
+ * @brief Find shortest path from given start node to all other nodes using Bellman-Ford algorithm. 
  * 
  * @param graph Graph with all nodes and edges included. 
  * @param start_node_index Index of staring node.
  */
-void dijkstra(Graph& graph, int start_node_index) {
+void bellman(Graph& graph, int start_node_index) {
     // Reset graph to be sure it's a clean search
     graph.graph_reset(start_node_index);
 
     Node* start_node = graph.get_node(start_node_index);
     start_node->set_value(0);
 
-    set<pair<int, Node*>> prio_queue;
-    prio_queue.insert({start_node->get_value(), start_node});
+    // Relaxation (num_nodes - 1) times
+    for(int round = 0; round < graph.get_nodes().size()-1; round++) {
+        for(Edge* edge : graph.get_edges()) {
+            Node* from_node = edge->from_node;
+            Node* to_node = edge->to_node;
 
-    pair<int, Node*> curr_cost_node;
-    while(!prio_queue.empty()) {
-        curr_cost_node = *prio_queue.begin();
-        prio_queue.erase(curr_cost_node);
+            int from_node_value = from_node->get_value();
+            int to_node_value = to_node->get_value();
+            int edge_cost = edge->edge_cost;
 
-        Node* curr_node = curr_cost_node.second;
-
-        // Already visited this node.
-        if(curr_node->is_visited()) {
-            continue;
-        } else {
-            curr_node->set_visited(true);
+            if(from_node_value + edge_cost < to_node_value) {
+                to_node->set_value(from_node_value + edge_cost);
+                to_node->set_prev_node(from_node);
+            }
         }
+    }
 
-        // Go through all edges to update neighbour nodes.
-        for(Edge* edge : curr_node->get_edges()) {
-            Node* neighbour_node = edge->connection_node; 
-            int travel_cost = edge->edge_cost;
+    // Find neg cycles
+    vector<Node*> negative_cycle_nodes;
+    for(Edge* edge : graph.get_edges()) {
+        Node* from_node = edge->from_node;
+        Node* to_node = edge->to_node;
 
+        int from_node_value = from_node->get_value();
+        int to_node_value = to_node->get_value();
+        int edge_cost = edge->edge_cost;
+
+        // neg cycle found, find all connected nodes
+        if(from_node_value + edge_cost < to_node_value) {
+            negative_cycle_nodes.push_back(to_node);
+            to_node->set_value(numeric_limits<int>::min());
+            to_node->set_visited(true);
+        }
+    }
+
+    // Set all nodes connected to neg cycle to -inf
+    for(Node* root_node : negative_cycle_nodes) {
+        for(Edge* edge : root_node->get_edges()) {
+            Node* neighbour_node = edge->to_node;
             if(neighbour_node->is_visited()) {
                 continue;
             }
-
-            // Check if it is worth to go this new path
-            int neighbour_value = neighbour_node->get_value();
-            int upd_cost = curr_node->get_value() + travel_cost;
-            if(upd_cost < neighbour_value) {
-                neighbour_node->set_value(upd_cost);
-                neighbour_node->set_prev_node(curr_node);
-                prio_queue.insert({upd_cost, neighbour_node});
-            }
+            neighbour_node->set_value(numeric_limits<int>::min());
         }
     }
 }
 
 /**
  * @brief Main function that takes inputs and outputs to the consol.
- * Finds the shortest (lowest cost) path to a given node in a given graph.
+ * Finds the shortest (lowest cost) path to a given node in a given graph (neg edges ok).
  *
  * @return int
  */
@@ -288,7 +303,7 @@ int main(){
             graph.add_one_way_edge(node1, node2, weight);
         }
 
-        dijkstra(graph, start_node_index);
+        bellman(graph, start_node_index);
 
         /* 
         Code to print path from start node to given index:
@@ -310,6 +325,8 @@ int main(){
             int value = q_node->get_value();
             if(value == numeric_limits<int>::max()) {
                 std::cout << "Impossible" << "\n";
+            } else if(q_node->get_value() == numeric_limits<int>::min()) {
+                std::cout << "-Infinity" << "\n";
             }else {
                 std::cout << q_node->get_value() << "\n";
             }
