@@ -15,6 +15,7 @@
 #include <utility>
 #include <set>
 using namespace std;
+int const INF = 1e9; 
 
 class Node;
 
@@ -208,7 +209,7 @@ class Graph {
         void graph_reset(int new_start_index) {
             for(Node* node : nodes) {
                 node->set_prev_node(nullptr);
-                node->set_value(numeric_limits<int>::max());
+                node->set_value(INF);
                 node->set_visited(false);
             }
             start_index = new_start_index;
@@ -243,6 +244,10 @@ void bellman(Graph& graph, int start_node_index) {
             int to_node_value = to_node->get_value();
             int edge_cost = edge->edge_cost;
 
+            //cout << "FROM NODE VALUE: " << from_node_value << endl;
+            //cout << "TO NODE VALUE: " << to_node_value << endl;
+            //cout << "PATH COST: " << edge_cost << endl;
+
             if(from_node_value + edge_cost < to_node_value) {
                 to_node->set_value(from_node_value + edge_cost);
                 to_node->set_prev_node(from_node);
@@ -262,21 +267,26 @@ void bellman(Graph& graph, int start_node_index) {
 
         // neg cycle found, find all connected nodes
         if(from_node_value + edge_cost < to_node_value) {
+            to_node->set_value(from_node_value + edge_cost);
             negative_cycle_nodes.push_back(to_node);
-            to_node->set_value(numeric_limits<int>::min());
-            to_node->set_visited(true);
         }
     }
 
     // Set all nodes connected to neg cycle to -inf
-    for(Node* root_node : negative_cycle_nodes) {
+    int index = 0;
+    while(index < negative_cycle_nodes.size()) {
+        Node* root_node = negative_cycle_nodes[index];
+        // root_node->set_value(numeric_limits<int>::min());
+        root_node->set_value(-INF);
+        root_node->set_visited(true);
         for(Edge* edge : root_node->get_edges()) {
             Node* neighbour_node = edge->to_node;
             if(neighbour_node->is_visited()) {
                 continue;
             }
-            neighbour_node->set_value(numeric_limits<int>::min());
+            negative_cycle_nodes.push_back(neighbour_node);
         }
+        ++index;
     }
 }
 
@@ -296,7 +306,8 @@ int main(){
         && !(num_nodes==0 && num_edges==0 && queries==0 && start_node_index==0)) {
 
         // Make graph and connect edges
-        Graph graph = Graph(num_nodes, numeric_limits<int>::max(), start_node_index);
+        // Graph graph = Graph(num_nodes, numeric_limits<int>::max(), start_node_index);
+        Graph graph = Graph(num_nodes, INF, start_node_index);
         int node1, node2, weight;
         for(int i = 0; i < num_edges; i++) {
             cin >> node1 >> node2 >> weight;
@@ -323,13 +334,26 @@ int main(){
             cin >> query;
             Node* q_node = graph.get_node(query);
             int value = q_node->get_value();
-            if(value == numeric_limits<int>::max()) {
+
+
+            if(value == INF) {
                 std::cout << "Impossible" << "\n";
-            } else if(q_node->get_value() == numeric_limits<int>::min()) {
+            } else if(q_node->get_value() == -INF) {
                 std::cout << "-Infinity" << "\n";
             }else {
                 std::cout << q_node->get_value() << "\n";
             }
+
+
+
+
+            // if(value == numeric_limits<int>::max()) {
+            //     std::cout << "Impossible" << "\n";
+            // } else if(q_node->get_value() == numeric_limits<int>::min()) {
+            //     std::cout << "-Infinity" << "\n";
+            // }else {
+            //     std::cout << q_node->get_value() << "\n";
+            // }
         }
     }
 }
