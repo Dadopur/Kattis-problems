@@ -17,6 +17,7 @@
 #include <utility>
 #include <set>
 using namespace std;
+int const INF = numeric_limits<int>::max();
 
 class Node;
 
@@ -200,10 +201,10 @@ class Graph {
         /**
          * @brief Reset all nodes to standard values and resets starting node to provided index.
          */
-        void graph_reset(int new_start_index) {
+        void graph_reset(int new_start_index, int init_value) {
             for(Node* node : nodes) {
                 node->set_prev_node(nullptr);
-                node->set_value(numeric_limits<int>::max());
+                node->set_value(init_value);
                 node->set_visited(false);
             }
             start_index = new_start_index;
@@ -222,7 +223,7 @@ class Graph {
  */
 void dijkstra(Graph& graph, int start_node_index) {
     // Reset graph to be sure it's a clean search
-    graph.graph_reset(start_node_index);
+    graph.graph_reset(start_node_index, INF);
 
     Node* start_node = graph.get_node(start_node_index);
     start_node->set_value(0);
@@ -281,7 +282,7 @@ int main(){
         && !(num_nodes==0 && num_edges==0 && queries==0 && start_node_index==0)) {
 
         // Make graph and connect edges
-        Graph graph = Graph(num_nodes, numeric_limits<int>::max(), start_node_index);
+        Graph graph = Graph(num_nodes, INF, start_node_index);
         int node1, node2, weight;
         for(int i = 0; i < num_edges; i++) {
             cin >> node1 >> node2 >> weight;
@@ -308,7 +309,7 @@ int main(){
             cin >> query;
             Node* q_node = graph.get_node(query);
             int value = q_node->get_value();
-            if(value == numeric_limits<int>::max()) {
+            if(value == INF) {
                 std::cout << "Impossible" << "\n";
             }else {
                 std::cout << q_node->get_value() << "\n";

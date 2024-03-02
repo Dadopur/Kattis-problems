@@ -2,8 +2,9 @@
  * @file graph_shortest_path.cpp
  * @author Daniel Purgal, danpu323 (danpu323@student.liu.se)
  * @brief Program is made to find the shortest path between two nodes using Bellman-Fords algorithm.
- * The time complexity for Bellmans is O(V*E) where E is number of edges and V
- * is number of nodes. This is because all E edges are checked V-1 times.
+ * The time complexity for Bellmans is O(E*V) where E is number of edges and V
+ * is number of nodes. This is because all E edges are checked V-1 times, then all edges are checked
+ * again, then all nodes are updated. O(E*(V-1) + E + V) = O(E*V).
  * @version 0.1
  * @date 2024-03-02
  *
@@ -15,7 +16,7 @@
 #include <utility>
 #include <set>
 using namespace std;
-int const INF = 1e9; 
+int const INF = numeric_limits<int>::max();
 
 class Node;
 
@@ -206,10 +207,10 @@ class Graph {
         /**
          * @brief Reset all nodes to standard values and resets starting node to provided index.
          */
-        void graph_reset(int new_start_index) {
+        void graph_reset(int new_start_index, int init_value) {
             for(Node* node : nodes) {
                 node->set_prev_node(nullptr);
-                node->set_value(INF);
+                node->set_value(init_value);
                 node->set_visited(false);
             }
             start_index = new_start_index;
@@ -229,7 +230,7 @@ class Graph {
  */
 void bellman(Graph& graph, int start_node_index) {
     // Reset graph to be sure it's a clean search
-    graph.graph_reset(start_node_index);
+    graph.graph_reset(start_node_index, INF);
 
     Node* start_node = graph.get_node(start_node_index);
     start_node->set_value(0);
@@ -244,11 +245,8 @@ void bellman(Graph& graph, int start_node_index) {
             int to_node_value = to_node->get_value();
             int edge_cost = edge->edge_cost;
 
-            //cout << "FROM NODE VALUE: " << from_node_value << endl;
-            //cout << "TO NODE VALUE: " << to_node_value << endl;
-            //cout << "PATH COST: " << edge_cost << endl;
-
-            if(from_node_value + edge_cost < to_node_value) {
+            // Update only in current node has been visited before (is not INF)
+            if((from_node_value != INF) && (from_node_value + edge_cost < to_node_value)) {
                 to_node->set_value(from_node_value + edge_cost);
                 to_node->set_prev_node(from_node);
             }
@@ -266,7 +264,7 @@ void bellman(Graph& graph, int start_node_index) {
         int edge_cost = edge->edge_cost;
 
         // neg cycle found, find all connected nodes
-        if(from_node_value + edge_cost < to_node_value) {
+        if((from_node_value != INF) && (from_node_value + edge_cost < to_node_value)) {
             to_node->set_value(from_node_value + edge_cost);
             negative_cycle_nodes.push_back(to_node);
         }
@@ -306,7 +304,6 @@ int main(){
         && !(num_nodes==0 && num_edges==0 && queries==0 && start_node_index==0)) {
 
         // Make graph and connect edges
-        // Graph graph = Graph(num_nodes, numeric_limits<int>::max(), start_node_index);
         Graph graph = Graph(num_nodes, INF, start_node_index);
         int node1, node2, weight;
         for(int i = 0; i < num_edges; i++) {
@@ -335,7 +332,6 @@ int main(){
             Node* q_node = graph.get_node(query);
             int value = q_node->get_value();
 
-
             if(value == INF) {
                 std::cout << "Impossible" << "\n";
             } else if(q_node->get_value() == -INF) {
@@ -343,17 +339,6 @@ int main(){
             }else {
                 std::cout << q_node->get_value() << "\n";
             }
-
-
-
-
-            // if(value == numeric_limits<int>::max()) {
-            //     std::cout << "Impossible" << "\n";
-            // } else if(q_node->get_value() == numeric_limits<int>::min()) {
-            //     std::cout << "-Infinity" << "\n";
-            // }else {
-            //     std::cout << q_node->get_value() << "\n";
-            // }
         }
     }
 }
