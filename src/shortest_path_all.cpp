@@ -190,10 +190,11 @@ void floyd(Graph& graph) {
                 Node* node_i = graph.get_node(i);
                 vector<int> distances_i = node_i->get_distances();
                 vector<int> distances_k = graph.get_node(k)->get_distances();
-                if(distances_k[j] != INF && distances_i[k] != INF
-                    && distances_i[j] > distances_i[k] + distances_k[j]) {
-                    // node_i->set_distance(j, min(distances_i[j], distances_i[k] + distances_k[j]));
-                    node_i->set_distance(j, distances_i[k] + distances_k[j]);
+                int a = distances_k[j];
+                int b = distances_i[k];
+                int c = distances_i[j];
+                if(c > a + b && a != INF && b != INF) {
+                    node_i->set_distance(j, a + b);
                 }
             }
         }
@@ -213,15 +214,17 @@ void floyd(Graph& graph) {
     int index = 0;
     while(index < negative_cycle_nodes.size()) {
         Node* root_node = negative_cycle_nodes[index];
-        root_node->set_visited(true);
-        
+
         if(root_node->is_visited()) {
+            ++index;
             continue;
         }
 
+        root_node->set_visited(true);
+
         vector<int> distances = root_node->get_distances();
         for(int i = 0; i < distances.size(); i++) {
-            if(distances[i] < INF && i != root_node->get_index()) {
+            if(distances[i] != INF) {
                 Node* next_node = graph.get_node(i);
                 negative_cycle_nodes.push_back(next_node);
                 root_node->set_distance(i, -INF);
