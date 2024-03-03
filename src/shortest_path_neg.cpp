@@ -14,9 +14,8 @@
 #include <limits>
 #include <algorithm>
 #include <utility>
-#include <set>
 using namespace std;
-int const INF = numeric_limits<int>::max();
+static const int INF = numeric_limits<int>::max();
 
 class Node;
 
@@ -43,7 +42,7 @@ class Node {
          * @param in_index Unique index of node as it is in the graph.
          * @param in_value Initial (start) value of node.
          */
-        Node(const int in_index, int in_value) : index(in_index), value(in_value), visited(false) {}
+        Node(const int in_index, const int in_value) : index(in_index), value(in_value), visited(false) {}
         
         /**
          * @brief Destroy the Node object.
@@ -116,6 +115,7 @@ class Graph {
          * 
          * @param num_nodes Number of nodes to be initialized in the graph.
          * @param init_value Int of the initial values for all nodes.
+         * @param start_index Index of starting node.
          */
         Graph(int const num_nodes, int const init_value, int const start_index) : start_index(start_index) {
             for(int i = 0; i < num_nodes; i++) {
@@ -274,7 +274,6 @@ void bellman(Graph& graph, int start_node_index) {
     int index = 0;
     while(index < negative_cycle_nodes.size()) {
         Node* root_node = negative_cycle_nodes[index];
-        // root_node->set_value(numeric_limits<int>::min());
         root_node->set_value(-INF);
         root_node->set_visited(true);
         for(Edge* edge : root_node->get_edges()) {
@@ -334,10 +333,10 @@ int main(){
 
             if(value == INF) {
                 std::cout << "Impossible" << "\n";
-            } else if(q_node->get_value() == -INF) {
+            } else if(value == -INF) {
                 std::cout << "-Infinity" << "\n";
             }else {
-                std::cout << q_node->get_value() << "\n";
+                std::cout << value << "\n";
             }
         }
     }

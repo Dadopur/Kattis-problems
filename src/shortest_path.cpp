@@ -17,7 +17,7 @@
 #include <utility>
 #include <set>
 using namespace std;
-int const INF = numeric_limits<int>::max();
+static const int INF = numeric_limits<int>::max();
 
 class Node;
 
@@ -43,7 +43,7 @@ class Node {
          * @param in_index Unique index of node as it is in the graph.
          * @param in_value Initial (start) value of node.
          */
-        Node(const int in_index, int in_value) : index(in_index), value(in_value), visited(false) {}
+        Node(const int in_index, const int in_value) : index(in_index), value(in_value), visited(false) {}
         
         /**
          * @brief Destroy the Node object.
@@ -116,6 +116,7 @@ class Graph {
          * 
          * @param num_nodes Number of nodes to be initialized in the graph.
          * @param init_value Int of the initial values for all nodes.
+         * @param start_index Index of starting node.
          */
         Graph(int const num_nodes, int const init_value, int const start_index) : start_index(start_index) {
             for(int i = 0; i < num_nodes; i++) {
@@ -312,7 +313,7 @@ int main(){
             if(value == INF) {
                 std::cout << "Impossible" << "\n";
             }else {
-                std::cout << q_node->get_value() << "\n";
+                std::cout << value << "\n";
             }
         }
     }
