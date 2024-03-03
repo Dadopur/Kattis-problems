@@ -1,11 +1,10 @@
 /**
  * @file graph_shortest_path.cpp
  * @author Daniel Purgal, danpu323 (danpu323@student.liu.se)
- * @brief 
+ * @brief Program is made to find shortest path between 2 nodes using Floyd Warshall algorithm.
+ * The time complexity is O(V^3) because of 3 nested for loops. Memory complexity is O(V^2). 
  * @version 0.1
  * @date 2024-02-21
- *
- * TODO: ADD COMMENT AT TOP
  */
 #include <iostream>
 #include <vector>
@@ -173,14 +172,17 @@ void floyd(Graph& graph) {
     for(Edge* edge : graph.get_edges()) {
         Node* from_node = edge->from_node;
         Node* to_node = edge->to_node;
+        int to_node_index = to_node->get_index();
         int edge_cost = edge->edge_cost;
-        if(from_node != to_node || edge_cost < 0) {
-            from_node->set_distance(to_node->get_index(), edge_cost);
+        int old_distance = from_node->get_distances()[to_node_index];
+        if(edge_cost < old_distance) {
+            from_node->set_distance(to_node_index, edge_cost);
         }
     }
 
     int num_nodes = graph.get_nodes().size();
 
+    // Find shortest paths
     for(int k = 0; k < num_nodes; k++) {
         for(int i = 0; i < num_nodes; i++) {
             for(int j = 0; j < num_nodes; j++) {
@@ -197,37 +199,17 @@ void floyd(Graph& graph) {
         }
     } 
 
-    // Find neg cycles
-    vector<Node*> negative_cycle_nodes;
+    // Find negative cycles and set to -INF
     for(int diag_index = 0; diag_index < num_nodes; diag_index++) {
         Node* node = graph.get_node(diag_index);
         vector<int> distances = node->get_distances();
         if(distances[diag_index] < 0) {
-            negative_cycle_nodes.push_back(node);
-        }
-    }
-
-    // Set all nodes connected to neg cycle to -inf
-    int index = 0;
-    while(index < negative_cycle_nodes.size()) {
-        Node* root_node = negative_cycle_nodes[index];
-
-        if(root_node->is_visited()) {
-            ++index;
-            continue;
-        }
-
-        root_node->set_visited(true);
-
-        vector<int> distances = root_node->get_distances();
-        for(int i = 0; i < distances.size(); i++) {
-            if(distances[i] != INF) {
-                Node* next_node = graph.get_node(i);
-                negative_cycle_nodes.push_back(next_node);
-                root_node->set_distance(i, -INF);
+            for(int i = 0; i < num_nodes; i++) {
+                if(distances[i] != INF) {
+                    node->set_distance(i, -INF);
+                }
             }
         }
-        ++index;
     }
 }
 
@@ -281,7 +263,7 @@ int main(){
             }else {
                 std::cout << value << "\n";
             }
-            cout << "\n";
         }
+        cout << "\n";
     }
 }
