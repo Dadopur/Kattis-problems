@@ -6,7 +6,7 @@
  * is number of nodes. This is because all E edges are checked V-1 times, then all edges are checked
  * again, then all nodes are updated. O(E*(V-1) + E + V) = O(E*V).
  * @version 0.1
- * @date 2024-03-02
+ * @date 2024-03-03
  *
  */
 #include <iostream>
@@ -35,191 +35,190 @@ struct Edge {
  * @brief Node class containing all necessary information for most basic search algorithms.
  */
 class Node {
-    public:
-        /**
-         * @brief Construct a new Node object.
-         * 
-         * @param in_index Unique index of node as it is in the graph.
-         * @param in_value Initial (start) value of node.
-         */
-        Node(const int in_index, const int in_value) : index(in_index), value(in_value), visited(false) {}
-        
-        /**
-         * @brief Destroy the Node object.
-         */
-        ~Node(){
-            for(auto edge : edges){
-                delete edge;
-            }
+public:
+    /**
+     * @brief Construct a new Node object.
+     * 
+     * @param in_index Unique index of node as it is in the graph.
+     * @param in_value Initial (start) value of node.
+     */
+    Node(const int in_index, const int in_value) : index(in_index), value(in_value), visited(false) {}
+    
+    /**
+     * @brief Destroy the Node object.
+     */
+    ~Node(){
+        for(auto edge : edges){
+            delete edge;
         }
-        // Getters
-        // ================================
-        int get_index() const {
-            return index;
-        }
+    }
+    // Getters
+    // ================================
+    int get_index() const {
+        return index;
+    }
 
-        int get_value() const {
-            return value;
-        }
+    int get_value() const {
+        return value;
+    }
 
-        bool is_visited() const {
-            return visited;
-        }
+    bool is_visited() const {
+        return visited;
+    }
 
-        vector<Edge*> get_edges() const {
-            return edges;
-        }
+    vector<Edge*> get_edges() const {
+        return edges;
+    }
 
-        Edge* get_edge(int const edge_index) const {
-            return edges[edge_index];
-        }
+    Edge* get_edge(int const edge_index) const {
+        return edges[edge_index];
+    }
 
-        Node* get_prev_node() {
-            return prev_node;
-        }
-        // Setters
-        // ================================
-        void set_value(int const new_value) {
-            value = new_value;
-        }
+    Node* get_prev_node() {
+        return prev_node;
+    }
+    // Setters
+    // ================================
+    void set_value(int const new_value) {
+        value = new_value;
+    }
 
-        void set_visited(bool const new_visited) {
-            visited = new_visited;
-        }
+    void set_visited(bool const new_visited) {
+        visited = new_visited;
+    }
 
-        void add_edge(Edge* new_edge) {
-            edges.push_back(new_edge);
-        }
-        
-        void set_prev_node(Node* new_pre) {
-            prev_node = new_pre;
-        }
+    void add_edge(Edge* new_edge) {
+        edges.push_back(new_edge);
+    }
+    
+    void set_prev_node(Node* new_pre) {
+        prev_node = new_pre;
+    }
 
-    private:
-        // Member variables
-        const int index;
-        int value;
-        bool visited;
-        Node* prev_node;
-        vector<Edge*> edges;
+private:
+    // Member variables
+    const int index;
+    int value;
+    bool visited;
+    Node* prev_node;
+    vector<Edge*> edges;
 };
 
 /**
- * @brief 
- * 
+ * @brief Class containing everything needed for a graph.
  */
 class Graph {
-    public:
-        /**
-         * @brief Construct a new Graph object
-         * 
-         * @param num_nodes Number of nodes to be initialized in the graph.
-         * @param init_value Int of the initial values for all nodes.
-         * @param start_index Index of starting node.
-         */
-        Graph(int const num_nodes, int const init_value, int const start_index) : start_index(start_index) {
-            for(int i = 0; i < num_nodes; i++) {
-                Node* new_node = new Node{i, init_value};
-                nodes.push_back(new_node);
-                new_node->set_prev_node(nullptr);
-            }
+public:
+    /**
+     * @brief Construct a new Graph object
+     * 
+     * @param num_nodes Number of nodes to be initialized in the graph.
+     * @param init_value Int of the initial values for all nodes.
+     * @param start_index Index of starting node.
+     */
+    Graph(int const num_nodes, int const init_value, int const start_index) : start_index(start_index) {
+        for(int i = 0; i < num_nodes; i++) {
+            Node* new_node = new Node{i, init_value};
+            nodes.push_back(new_node);
+            new_node->set_prev_node(nullptr);
         }
+    }
 
-        /**
-         * @brief Destroy the Graph object
-         */
-        ~Graph() {
-            for(Node* node : nodes) {
-                delete node;
-            }
+    /**
+     * @brief Destroy the Graph object
+     */
+    ~Graph() {
+        for(Node* node : nodes) {
+            delete node;
         }
+    }
 
-        Node* get_node(int const index) const {
-            return nodes[index];
-        }
+    Node* get_node(int const index) const {
+        return nodes[index];
+    }
 
-        vector<Node*> get_nodes() {
-            return nodes;
-        }
+    vector<Node*> get_nodes() {
+        return nodes;
+    }
 
-        vector<Edge*> get_edges() {
-            return edges;
-        }
+    vector<Edge*> get_edges() {
+        return edges;
+    }
 
-        int get_start_index() {
-            return start_index;
-        }
+    int get_start_index() {
+        return start_index;
+    }
 
 
-        /**
-         * @brief Get path from start node to given end node if it exists. 
-         * 
-         * @param end_node_index Index of node to get path to.
-         * @return vector<Node*> with all visited nodes to the end node, (empty if not reached or error).
-         */
-        vector<Node*> get_path(int end_node_index) {
-            vector<Node*> return_path;
+    /**
+     * @brief Get path from start node to given end node if it exists. 
+     * 
+     * @param end_node_index Index of node to get path to.
+     * @return vector<Node*> with all visited nodes to the end node, (empty if not reached or error).
+     */
+    vector<Node*> get_path(int end_node_index) {
+        vector<Node*> return_path;
 
-            // Given index is out of range (no node of that index) -> return no path
-            if(end_node_index >= get_nodes().size()) {
-                return return_path;
-            }
-            
-            Node* end_node = get_node(end_node_index);
-            Node* start_node = get_node(get_start_index());
-            Node* current_prev = end_node->get_prev_node();
-
-            // Only add end node if it has been visited (has a path to start)
-            if(end_node->is_visited()) {
-                return_path.push_back(end_node);
-            }
-            
-            // Follow path back to start
-            while(current_prev != nullptr) {
-                return_path.push_back(current_prev);
-                current_prev = current_prev->get_prev_node();
-            }
-            // Reverse to have list in right order: start node -> end node.
-            reverse(return_path.begin(), return_path.end());
+        // Given index is out of range (no node of that index) -> return no path
+        if(end_node_index >= get_nodes().size()) {
             return return_path;
         }
+        
+        Node* end_node = get_node(end_node_index);
+        Node* start_node = get_node(get_start_index());
+        Node* current_prev = end_node->get_prev_node();
 
-        /**
-         * @brief Add new connection between two nodes with a given weight cost.
-         *
-         * @param node1 Index of first node to be connected.
-         * @param node2 Index of second node to be connected.
-         * @param cost Path cost for the connection (edge).
-         */
-        void add_one_way_edge(int const node1, int const node2, int const cost) {
-            // Get nodes to be connected
-            Node* primary_node = nodes[node1];
-            Node* secundary_node = nodes[node2];
-
-            // Make new edge
-            Edge* edge = new Edge{primary_node, secundary_node, cost};
-
-            // Add new edges to the nodes
-            primary_node->add_edge(edge);
-            edges.push_back(edge);
+        // Only add end node if it has been visited (has a path to start)
+        if(end_node->is_visited()) {
+            return_path.push_back(end_node);
         }
-
-        /**
-         * @brief Reset all nodes to standard values and resets starting node to provided index.
-         */
-        void graph_reset(int new_start_index, int init_value) {
-            for(Node* node : nodes) {
-                node->set_prev_node(nullptr);
-                node->set_value(init_value);
-                node->set_visited(false);
-            }
-            start_index = new_start_index;
+        
+        // Follow path back to start
+        while(current_prev != nullptr) {
+            return_path.push_back(current_prev);
+            current_prev = current_prev->get_prev_node();
         }
+        // Reverse to have list in right order: start node -> end node.
+        reverse(return_path.begin(), return_path.end());
+        return return_path;
+    }
 
-    private:
-        vector<Node*> nodes;
-        vector<Edge*> edges;
-        int start_index;
+    /**
+     * @brief Add new connection between two nodes with a given weight cost.
+     *
+     * @param node1 Index of first node to be connected.
+     * @param node2 Index of second node to be connected.
+     * @param cost Path cost for the connection (edge).
+     */
+    void add_one_way_edge(int const node1, int const node2, int const cost) {
+        // Get nodes to be connected
+        Node* primary_node = nodes[node1];
+        Node* secundary_node = nodes[node2];
+
+        // Make new edge
+        Edge* edge = new Edge{primary_node, secundary_node, cost};
+
+        // Add new edges to the nodes
+        primary_node->add_edge(edge);
+        edges.push_back(edge);
+    }
+
+    /**
+     * @brief Reset all nodes to standard values and resets starting node to provided index.
+     */
+    void graph_reset(int new_start_index, int init_value) {
+        for(Node* node : nodes) {
+            node->set_prev_node(nullptr);
+            node->set_value(init_value);
+            node->set_visited(false);
+        }
+        start_index = new_start_index;
+    }
+
+private:
+    vector<Node*> nodes;
+    vector<Edge*> edges;
+    int start_index;
 };
 
 /**
