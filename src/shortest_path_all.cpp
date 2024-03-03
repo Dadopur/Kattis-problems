@@ -6,9 +6,6 @@
  * @date 2024-02-21
  *
  * TODO: ADD COMMENT AT TOP
- * TODO: CHANGE TO NO VALUE (ONLY DISTANCES)
- * TODO: GET_VALUE IS NOW 1 INPUT (NODE THAT IS END_POINT)
- * TODO: IMPLEMENT NEGATIVE CYCLES CHECK AND SET TO -INF
  */
 #include <iostream>
 #include <vector>
@@ -165,7 +162,7 @@ class Graph {
 };
 
 /**
- * @brief Find shortest path from given start node to all other nodes using dijkstras algorithm. 
+ * @brief Find shortest path from given start node to all other nodes using Floyd-Warshall algorithm. 
  * 
  * @param graph Graph with all nodes and edges included. 
  */
@@ -259,6 +256,13 @@ int main(){
 
         floyd(graph);
 
+        // for(Node* node : graph.get_nodes()) {
+        //     for(int i : node->get_distances()) {
+        //         cout << i << " ";
+        //     }
+        //     cout << endl;
+        // }
+
 
         // Prints
         int start_node_index;
@@ -277,6 +281,7 @@ int main(){
             }else {
                 std::cout << value << "\n";
             }
+            cout << "\n";
         }
     }
 }
