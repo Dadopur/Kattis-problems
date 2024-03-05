@@ -232,7 +232,7 @@ void bellman(Graph& graph, int start_node_index) {
     graph.graph_reset(start_node_index, INF);
 
     Node* start_node = graph.get_node(start_node_index);
-    start_node->set_value(0);
+    start_node->set_value(-100);
 
     // Relaxation (num_nodes - 1) times
     for(int round = 0; round < graph.get_nodes().size()-1; round++) {
@@ -243,9 +243,10 @@ void bellman(Graph& graph, int start_node_index) {
             int from_node_value = from_node->get_value();
             int to_node_value = to_node->get_value();
             int edge_cost = edge->edge_cost;
+            int edge_cost_plus = from_node_value + edge_cost;
 
             // Update only in current node has been visited before (is not INF)
-            if((from_node_value != INF) && (from_node_value + edge_cost < to_node_value)) {
+            if((from_node_value != INF) && (edge_cost_plus < to_node_value) && (edge_cost_plus < 0)) {
                 to_node->set_value(from_node_value + edge_cost);
                 to_node->set_prev_node(from_node);
             }
@@ -261,9 +262,10 @@ void bellman(Graph& graph, int start_node_index) {
         int from_node_value = from_node->get_value();
         int to_node_value = to_node->get_value();
         int edge_cost = edge->edge_cost;
+        int edge_cost_plus = from_node_value + edge_cost;
 
         // neg cycle found, find all connected nodes
-        if((from_node_value != INF) && (from_node_value + edge_cost < to_node_value)) {
+        if((from_node_value != INF) && (edge_cost_plus < to_node_value) && (edge_cost_plus < 0)) {
             to_node->set_value(from_node_value + edge_cost);
             negative_cycle_nodes.push_back(to_node);
         }
@@ -298,20 +300,20 @@ int main(){
     std::cout.tie(NULL);
 
     int rooms;
-    cin >> rooms;
     while(cin >> rooms && rooms != -1) {
         Graph graph = Graph(rooms, INF, 0);
         int energy;
         int room_connections;
         int next_room;
-        vector<int> room_energies;
-        vector<vector<int>> connected_rooms;
+        vector<int> room_energies(rooms);
+        vector<vector<int>> connected_rooms(rooms);
         for(int room = 0; room < rooms; room++) {
             cin >> energy >> room_connections;
             room_energies[room] = -energy;
             for(int connection = 0; connection < room_connections; connection++) {
                 cin >> next_room;
-                connected_rooms[room].push_back(next_room);
+                // -1 to offset start at node 1
+                connected_rooms[room].push_back(next_room - 1);
             }
         }
 
@@ -322,10 +324,18 @@ int main(){
                 graph.add_one_way_edge(node, i, next_room_energy);
             }
         }
+        
+        // for(Edge* edge : graph.get_edges()) {
+        //     cout << "FROM: " << edge->from_node->get_index() << " TO: " << edge->to_node->get_index() << " COST: " << edge->edge_cost << endl;
+        // }
 
+        
         bellman(graph, 0);
+        
+        
         int value = graph.get_node(rooms-1)->get_value();
-        if(value == INF || value != -INF || value < 0) {
+        // cout << "value: " << value << endl;
+        if(value == INF || value >= 0) {
             cout << "hopeless\n";
         } else {
             cout << "winnable\n";
