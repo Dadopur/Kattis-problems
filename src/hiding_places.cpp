@@ -124,7 +124,7 @@ void traverse_grid(vector<vector<int>>& world_map, int x_start, int y_start) {
 int main(){
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
-    cout.tie(NULL);
+    //cout.tie(NULL);
 
     int rounds;
     cin >> rounds;
@@ -136,12 +136,12 @@ int main(){
         start_x = (int) start_position[0] - 97;
         start_y = abs(start_position[1] - '8');
 
-        //cout << start_x << " " << start_y << endl;
+        // cout << "START VALUES: " << start_x << " " << start_y << endl;
         traverse_grid(world_map, start_x, start_y);
 
-        int highest_number_steps;
-        for(auto i : world_map) {
-            for(auto j : i) {
+        int highest_number_steps = 0;
+        for(vector<int> i : world_map) {
+            for(int j : i) {
                 highest_number_steps = max(highest_number_steps, j);
             }
         }
@@ -155,12 +155,12 @@ int main(){
             }
         }
         cout << highest_number_steps << " ";
+
         int x;
         int y;
-        for(auto place : hiding_places) {
+        for(pair<int, int> place : hiding_places) {
             x = place.first;
             y = place.second;
-
             cout << char(x+97) << char(abs(y - '8')) << " ";
         }
         cout << "\n";
