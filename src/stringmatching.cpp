@@ -1,4 +1,13 @@
-
+/**
+ * @file stringmatching.cpp
+ * @author Daniel Purgal
+ * @brief Find maching pattern in a text using KNP (Knuth-Morris-Pratt) algorithm.
+ * The time complexity of the whole algorithm is O(n + m) where n is the size of the text and m is the size of the pattern.
+ * O(m) is the time complexity of the pre_process function and O(n) for the search.
+ * The space complexity of the algorithm is O(m) where m is the size of the pattern.
+ * @version 0.1
+ * @date 2024-03-26 
+ */
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -6,46 +15,42 @@
 using namespace std;
 
 /**
- * @brief Create a longest proper prefix suffix array. 
+ * @brief Create a longest proper prefix suffix array.
  * 
  * @param pattern 
  * @return vector<int> of longest prefix suffix (lps) 
  */
 vector<int> pre_process(string pattern) {
     vector<int> lps(pattern.size(), 0);
-    if(pattern.size() == 1) {
-        return lps;
-    }
-
-    int length = 1;
-    while(length < pattern.size()) {
-        int longest = 0;
-        // Find the longest prefix suffix for current length
-        for(int i = 0; i <= length; i++) {
-            int end_p = length - i;
-            int start_p = 0;
-            bool is_pre_suff = true;
-            for(int j = 0; j < i; j++) {
-                if(pattern[start_p] == pattern[end_p]) {
-                    start_p++;
-                    end_p++;
-                } else {
-                    is_pre_suff = false;
-                    break;
-                }   
-            }
-            if(is_pre_suff && i > longest) {
-                longest = i;
+    int iter = 1;
+    int ps_length = 0;
+    lps[0] = 0;
+    while(iter < pattern.size()) {
+        if(pattern[iter] == pattern[ps_length]) {
+            lps[iter] = ps_length + 1;
+            ps_length++;
+            iter++;
+        } else {
+            if(ps_length != 0) {
+                ps_length = lps[ps_length - 1];
+            } else {
+                lps[iter] = 0;
+                iter++;
             }
         }
-        lps[length] = longest;
-        length++;
     }
     return lps;
 }
 
+/**
+ * @brief Find all positions of matches of the pattern in the text.
+ * 
+ * @param pattern 
+ * @param text 
+ * @return vector<int> With all positions the of mached pattern in the text.
+ */
 vector<int> find_maches(string pattern, string text) {
-    vector<int> matches;
+    vector<int> matches{};
     vector<int> lps = pre_process(pattern);
     int pattern_size = pattern.size();
     int text_size = text.size();
@@ -53,7 +58,7 @@ vector<int> find_maches(string pattern, string text) {
     int pattern_pointer = 0;
     int text_pointer = 0;
 
-    while(text_pointer < text_size - pattern_size + 1) {
+    while(text_pointer < text_size) {
         if(pattern[pattern_pointer] == text[text_pointer]) {
             pattern_pointer++;
             text_pointer++;
@@ -80,7 +85,9 @@ int main(){
 
     string pattern, text;
     while(getline(cin, pattern)) {
-        getline(cin, text);
+        if(!getline(cin, text)) {
+            break;
+        }
         vector<int> matches = find_maches(pattern, text);
         for(int match : matches) {
             cout << match << " ";
