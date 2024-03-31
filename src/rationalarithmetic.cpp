@@ -1,13 +1,27 @@
+/**
+ * @file rationalarithmetic.cpp
+ * @author Daniel Purgal
+ * @brief Using operator overloading to perform arithmetic operations on rational numbers.
+ * @version 0.1
+ * @date 2024-03-31 
+ */
 #include <iostream>
-#include <vector>
-#include <algorithm>
 using namespace std;
 
+// int gcd(int a, int b) {
+//     if(b == 0) {
+//         return a;
+//     }
+//     return gcd(b, a % b);
+// }
+
 int gcd(int a, int b) {
-    if(b == 0) {
-        return a;
+    while(b != 0) {
+        int temp = b;
+        b = a % b;
+        a = temp;
     }
-    return gcd(b, a % b);
+    return a;
 }
 
 class Ratonal_number{
@@ -20,10 +34,11 @@ public:
             numirator = num;
             denominator = den;
         }
+        simplify();
     }
     
     Ratonal_number() {
-        numirator = 0;
+        numirator = 1;
         denominator = 1;
     }
 
@@ -39,9 +54,7 @@ public:
         int new_num = num1 + num2;
         int new_den = denominator * (den2/factor);
 
-        // Normelize
-        factor = gcd(new_num, new_den);
-        return Ratonal_number{(new_num/factor), (new_den/factor)};
+        return Ratonal_number{new_num, new_den};
     }
 
     Ratonal_number operator-(Ratonal_number subtrahend){
@@ -56,9 +69,7 @@ public:
         int new_num = num1 - num2;
         int new_den = denominator * (den2/factor);
 
-        // Normelize
-        factor = gcd(new_num, new_den);
-        return Ratonal_number{(new_num/factor), (new_den/factor)};
+        return Ratonal_number{new_num, new_den};
     }
 
 
@@ -70,9 +81,7 @@ public:
         int new_num = numirator * num2;
         int new_den = denominator * den2;
 
-        // Normelize
-        int new_gcd = gcd(new_num, new_den);
-        return Ratonal_number{(new_num/new_gcd), (new_den/new_gcd)};
+        return Ratonal_number{new_num, new_den};
     }
 
     Ratonal_number operator/(Ratonal_number divisor){
@@ -83,9 +92,7 @@ public:
         int new_num = numirator * den2;
         int new_den = denominator * num2;
 
-        // Normelize
-        int factor = gcd(new_num, new_den);
-        return Ratonal_number{(new_num/factor), (new_den/factor)};
+        return Ratonal_number{new_num, new_den};
     }
 
     
@@ -102,9 +109,8 @@ public:
         int den2 = other.get_demnomirator();
         int factor = gcd(denominator, den2);
 
-        int num1 = numirator * (denominator/factor);
-        num2 = num2 * (den2/factor);
-        int new_den = denominator * (denominator/factor);
+        int num1 = numirator * (den2/factor);
+        num2 = num2 * (denominator/factor);
         return num1 < num2;
     }
 
@@ -113,9 +119,8 @@ public:
         int den2 = other.get_demnomirator();
         int factor = gcd(denominator, den2);
 
-        int num1 = numirator * (denominator/factor);
-        num2 = num2 * (den2/factor);
-        int new_den = denominator * (denominator/factor);
+        int num1 = numirator * (den2/factor);
+        num2 = num2 * (denominator/factor);
         return num1 <= num2;
     }
 
@@ -124,9 +129,8 @@ public:
         int den2 = other.get_demnomirator();
         int factor = gcd(denominator, den2);
 
-        int num1 = numirator * (denominator/factor);
-        num2 = num2 * (den2/factor);
-        int new_den = denominator * (denominator/factor);
+        int num1 = numirator * (den2/factor);
+        num2 = num2 * (denominator/factor);
         return num1 > num2;
     }
 
@@ -135,20 +139,28 @@ public:
         int den2 = other.get_demnomirator();
         int factor = gcd(denominator, den2);
 
-        int num1 = numirator * (denominator/factor);
-        num2 = num2 * (den2/factor);
-        int new_den = denominator * (denominator/factor);
+        int num1 = numirator * (den2/factor);
+        num2 = num2 * (denominator/factor);
         return num1 >= num2;
     }
 
-    void operator=(Ratonal_number obj) {
-        numirator = obj.get_numirator();
-        denominator = obj.get_demnomirator();
+    Ratonal_number& operator=(const Ratonal_number& obj) {
+        if (this != &obj) {
+            numirator = obj.numirator;
+            denominator = obj.denominator;
+        }
+        return *this;
     }
 
     friend ostream& operator<<(ostream& os, const Ratonal_number& obj) {
         os << obj.numirator << " / " << obj.denominator;
         return os;
+    }
+
+    friend istream& operator>>(istream& is, Ratonal_number& obj) {
+        is >> obj.numirator >> obj.denominator;
+        obj.simplify();
+        return is;
     }
 
     int get_numirator() {
@@ -157,6 +169,12 @@ public:
     
     int get_demnomirator() {
         return denominator;
+    }
+
+    void simplify() {
+        int factor = gcd(abs(numirator), abs(denominator));
+        numirator = numirator / factor;
+        denominator = denominator / factor;
     }
 
 private:
@@ -170,13 +188,10 @@ int main(){
     int rounds;
     cin >> rounds;
     for(int round = 0; round < rounds; round++) {
-        int num1, num2, den1, den2;
         char operation;
-        cin >> num1 >> den1 >> operation >> num2 >> den2;
-        Ratonal_number r1(num1, den1);
-        Ratonal_number r2(num2, den2);
-        Ratonal_number r3;
-
+        Ratonal_number r1, r2, r3;
+        cin >> r1 >> operation >> r2;
+        
         if(operation == '+') {
             r3 = r1 + r2;
         } else if(operation == '-') {
