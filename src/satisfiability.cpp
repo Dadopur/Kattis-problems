@@ -6,7 +6,8 @@
 #include <iterator>
 #include <utility>
 #include <map>
-//#include <bitset>
+#include <bitset>
+#include <cmath>
 using namespace std;
 
 vector<string> separate_string (string str) {
@@ -25,8 +26,9 @@ int main() {
     for(int test = 0; test < tests; test++) {
         int variables, clauses;
         cin >> variables >> clauses;
-
-        vector<pair<vector<bool>, vector<bool>>> clauses_vector(clauses, make_pair(vector<bool>(variables, false), vector<bool>(variables, false)));
+        cin.ignore();
+        //vector<pair<vector<bool>, vector<bool>>> clauses_vector(clauses, make_pair(vector<bool>(variables, false), vector<bool>(variables, false)));
+        vector<pair<bitset<20>, bitset<20>>> clauses_vector(clauses, make_pair(bitset<20>(), bitset<20>()));
         map<string, int> variable_map;
 
         string input;
@@ -52,24 +54,62 @@ int main() {
 
                 int var_num = variable_map[s];
 
+                // if(is_negated) {
+                //     clauses_vector[clause_num].second[var_num] = true;
+                // } else {
+                //     clauses_vector[clause_num].first[var_num] = true;
+                // }
+
                 if(is_negated) {
-                    clauses_vector[clause_num].second[var_num] = true;
+                    clauses_vector[clause_num].second.set(var_num);
                 } else {
-                    clauses_vector[clause_num].first[var_num] = true;
+                    clauses_vector[clause_num].first.set(var_num);
                 }
 
-                if(clauses_vector[clause_num].first[var_num] && clauses_vector[clause_num].second[var_num]) {
+                // if(clauses_vector[clause_num].first[var_num] && clauses_vector[clause_num].second[var_num]) {
+                //     // Set alla variables to true when a tautology is found
+                //     for(int i = 0; i < variables; i++) {
+                //         clauses_vector[clause_num].first[i] = true;
+                //         clauses_vector[clause_num].second[i] = true;
+                //     }
+                //     break;
+                // }
+
+                if(clauses_vector[clause_num].first.test(var_num) && clauses_vector[clause_num].second.test(var_num)) {
                     // Set alla variables to true when a tautology is found
-                    for(int i = 0; i < variables; i++) {
-                        clauses_vector[clause_num].first[i] = true;
-                        clauses_vector[clause_num].second[i] = true;
-                    }
+                    clauses_vector[clause_num].first.set();
+                    clauses_vector[clause_num].second.set();
                     break;
                 }
+
             } 
         }
-
         bool satisfiable = false;
         // check if satisfiable trugh brute force
+
+        for(int i = 0; i < pow(2, variables); i++) {
+            for(int c = 0; c < clauses; c++) {
+                bitset<20> bits(i);
+                bitset<20> and_bits = bits & clauses_vector[c].first;
+                bitset<20> neg_and_bits = bits.flip() & clauses_vector[c].second;
+
+                if(and_bits.any() || neg_and_bits.any()) {
+                    satisfiable = true;
+                    continue;
+                } else {
+                    satisfiable = false;
+                    break;
+                }
+            }
+            if(satisfiable) {
+                break;
+            }
+        }
+
+        if(satisfiable) {
+            cout << "satisfiable\n";
+        } else {
+            cout << "unsatisfiable\n";
+        }
     }
 }
