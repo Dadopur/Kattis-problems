@@ -32,10 +32,10 @@ int main() {
         map<string, int> variable_map;
 
         string input;
+        int variable_number = 0;
         for(int clause_num = 0; clause_num < clauses; clause_num++) {
             getline(cin, input);
             vector<string> s_clasues = separate_string(input);
-            int variable_number = 0;
             for(string s : s_clasues) {
                 if(s == "v") {
                     continue;
@@ -47,12 +47,18 @@ int main() {
                     s = s.substr(1);
                 }
 
+
                 if(variable_map.find(s) == variable_map.end()) {
                     variable_map[s] = variable_number;
                     variable_number++;
                 }
 
+                // for(auto p : variable_map) {
+                //     cout << p.first << " " << p.second << endl;
+                // }
+
                 int var_num = variable_map[s];
+                // cout << "var_num: " << s << " "<< var_num << endl;
 
                 // if(is_negated) {
                 //     clauses_vector[clause_num].second[var_num] = true;
@@ -87,16 +93,32 @@ int main() {
         bool satisfiable = false;
         // check if satisfiable trugh brute force
 
+        // int i=0;
+        // for(auto p : clauses_vector) {
+        //     cout << i << " " << p.first << " " << p.second << endl;
+        //     i++;
+        // }
+
+
         for(int i = 0; i < pow(2, variables); i++) {
             for(int c = 0; c < clauses; c++) {
                 bitset<20> bits(i);
-                bitset<20> and_bits = bits & clauses_vector[c].first;
-                bitset<20> neg_and_bits = bits.flip() & clauses_vector[c].second;
+                bitset<20> and_bits(i);
+                bitset<20> neg_and_bits(i);
+                neg_and_bits.flip();
+                and_bits &= clauses_vector[c].first;
+                neg_and_bits &= clauses_vector[c].second;
+
+                //cout <<  i << " bits: " << bits << endl;
+                // cout << "and_bits: " << and_bits << endl;
+                // cout << "neg_and_bits: " << neg_and_bits << endl;
 
                 if(and_bits.any() || neg_and_bits.any()) {
+                    // cout << "came here1" << endl;
                     satisfiable = true;
                     continue;
                 } else {
+                    // cout << "came here2" << endl;
                     satisfiable = false;
                     break;
                 }
