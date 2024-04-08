@@ -5,11 +5,15 @@
  * The time complexity is O(log(nm)) where n and m are the numbers to find the remainder of.
  * @version 0.1
  * @date 2024-03-30
+ * 
+ * 
+ * THIS CODE DOES NOT WORK YET
  */
 
 #include <iostream>
 #include <vector>
 using namespace std;
+typedef long long ll;
 
 /**
  * @brief Extended Euclidean algorithm to find the greatest common divisor of a and b.
@@ -19,16 +23,16 @@ using namespace std;
  * @param b 
  * @param x 
  * @param y 
- * @return int 
+ * @return ll 
  */
-int gcd_extended(int a, int b, int* x, int* y) {
+ll gcd_extended(ll a, ll b, ll* x, ll* y) {
     if(b == 0) {
         *x = 1;
         *y = 0;
         return a;
     }
-    int x1, y1;
-    int gcd =  gcd_extended(b, a % b, &x1, &y1);
+    ll x1, y1;
+    ll gcd =  gcd_extended(b, a % b, &x1, &y1);
 
     *x = y1;
     *y = x1 - y1 * (a / b);
@@ -42,14 +46,14 @@ int gcd_extended(int a, int b, int* x, int* y) {
  * @param n 
  * @param b
  * @param m
- * @return pair<int, int> where first is the number X and second is the product of n and m.
+ * @return pair<ll, ll> where first is the number X and second is the product of n and m.
  */
-pair<int, int> chinease_remainder(int a, int n, int b, int m) {
-    int X, k;
+pair<ll, ll> chinese_remainder(ll a, ll n, ll b, ll m) {
+    ll X, k;
     k = n * m;
 
-    int x, y;
-    int gcd = gcd_extended(n, m, &x, &y);
+    ll x, y;
+    ll gcd = gcd_extended(n, m, &x, &y);
     X = (a * m * y + b * n * x) % k;
     if(X < 0) {
         X += k;
@@ -64,9 +68,9 @@ int main(){
     int num_tests;
     cin >> num_tests;
     for(int test = 0; test < num_tests; test++) {
-        int a, n, b, m;
+        ll a, n, b, m;
         cin >> a >> n >> b >> m;
-        pair<int, int> result = chinease_remainder(a, n, b, m);
+        pair<ll, ll> result = chinese_remainder(a, n, b, m);
         cout << result.first << " " << result.second << "\n";
     }
 }

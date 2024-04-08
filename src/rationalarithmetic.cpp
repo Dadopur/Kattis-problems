@@ -7,26 +7,30 @@
  */
 #include <iostream>
 using namespace std;
+typedef long long ll;
 
-// int gcd(int a, int b) {
-//     if(b == 0) {
-//         return a;
-//     }
-//     return gcd(b, a % b);
-// }
-
-int gcd(int a, int b) {
+/**
+ * @brief Find the greatest common divisor of a and b.
+ * 
+ * @param a 
+ * @param b 
+ * @return ll 
+ */
+ll gcd(ll a, ll b) {
     while(b != 0) {
-        int temp = b;
+        ll temp = b;
         b = a % b;
         a = temp;
     }
     return a;
 }
 
+/**
+ * @brief Class to represent a rational number. 
+ */
 class Ratonal_number{
 public:
-    Ratonal_number(int num, int den) {
+    Ratonal_number(ll num, ll den) {
         if(den < 0) {
             numirator = num * -1;
             denominator = den * -1;
@@ -43,54 +47,54 @@ public:
     }
 
     Ratonal_number operator+(Ratonal_number addend){
-        int num2 = addend.get_numirator();
-        int den2 = addend.get_demnomirator();
-        int factor = gcd(denominator, den2);
+        ll num2 = addend.get_numirator();
+        ll den2 = addend.get_demnomirator();
+        ll factor = gcd(denominator, den2);
 
-        int num1 = numirator * (den2/factor);
+        ll num1 = numirator * (den2/factor);
         num2 = num2 * (denominator/factor);
 
         // Make new numirator/denominator
-        int new_num = num1 + num2;
-        int new_den = denominator * (den2/factor);
+        ll new_num = num1 + num2;
+        ll new_den = denominator * (den2/factor);
 
         return Ratonal_number{new_num, new_den};
     }
 
     Ratonal_number operator-(Ratonal_number subtrahend){
-        int num2 = subtrahend.get_numirator();
-        int den2 = subtrahend.get_demnomirator();
-        int factor = gcd(denominator, den2);
+        ll num2 = subtrahend.get_numirator();
+        ll den2 = subtrahend.get_demnomirator();
+        ll factor = gcd(denominator, den2);
 
-        int num1 = numirator * (den2/factor);
+        ll num1 = numirator * (den2/factor);
         num2 = num2 * (denominator/factor);
 
         // Make new numirator/denominator
-        int new_num = num1 - num2;
-        int new_den = denominator * (den2/factor);
+        ll new_num = num1 - num2;
+        ll new_den = denominator * (den2/factor);
 
         return Ratonal_number{new_num, new_den};
     }
 
 
     Ratonal_number operator*(Ratonal_number factor2){
-        int num2 = factor2.get_numirator();
-        int den2 = factor2.get_demnomirator();
+        ll num2 = factor2.get_numirator();
+        ll den2 = factor2.get_demnomirator();
 
         // Make new numirator/denominator
-        int new_num = numirator * num2;
-        int new_den = denominator * den2;
+        ll new_num = numirator * num2;
+        ll new_den = denominator * den2;
 
         return Ratonal_number{new_num, new_den};
     }
 
     Ratonal_number operator/(Ratonal_number divisor){
-        int num2 = divisor.get_numirator();
-        int den2 = divisor.get_demnomirator();
+        ll num2 = divisor.get_numirator();
+        ll den2 = divisor.get_demnomirator();
 
         // Make new numirator/denominator
-        int new_num = numirator * den2;
-        int new_den = denominator * num2;
+        ll new_num = numirator * den2;
+        ll new_den = denominator * num2;
 
         return Ratonal_number{new_num, new_den};
     }
@@ -105,41 +109,41 @@ public:
     }
 
     bool operator<(Ratonal_number other){
-        int num2 = other.get_numirator();
-        int den2 = other.get_demnomirator();
-        int factor = gcd(denominator, den2);
+        ll num2 = other.get_numirator();
+        ll den2 = other.get_demnomirator();
+        ll factor = gcd(denominator, den2);
 
-        int num1 = numirator * (den2/factor);
+        ll num1 = numirator * (den2/factor);
         num2 = num2 * (denominator/factor);
         return num1 < num2;
     }
 
     bool operator<=(Ratonal_number other){
-        int num2 = other.get_numirator();
-        int den2 = other.get_demnomirator();
-        int factor = gcd(denominator, den2);
+        ll num2 = other.get_numirator();
+        ll den2 = other.get_demnomirator();
+        ll factor = gcd(denominator, den2);
 
-        int num1 = numirator * (den2/factor);
+        ll num1 = numirator * (den2/factor);
         num2 = num2 * (denominator/factor);
         return num1 <= num2;
     }
 
     bool operator>(Ratonal_number other){
-        int num2 = other.get_numirator();
-        int den2 = other.get_demnomirator();
-        int factor = gcd(denominator, den2);
+        ll num2 = other.get_numirator();
+        ll den2 = other.get_demnomirator();
+        ll factor = gcd(denominator, den2);
 
-        int num1 = numirator * (den2/factor);
+        ll num1 = numirator * (den2/factor);
         num2 = num2 * (denominator/factor);
         return num1 > num2;
     }
 
     bool operator>=(Ratonal_number other){
-        int num2 = other.get_numirator();
-        int den2 = other.get_demnomirator();
-        int factor = gcd(denominator, den2);
+        ll num2 = other.get_numirator();
+        ll den2 = other.get_demnomirator();
+        ll factor = gcd(denominator, den2);
 
-        int num1 = numirator * (den2/factor);
+        ll num1 = numirator * (den2/factor);
         num2 = num2 * (denominator/factor);
         return num1 >= num2;
     }
@@ -163,22 +167,22 @@ public:
         return is;
     }
 
-    int get_numirator() {
+    ll get_numirator() {
         return numirator;
     }
     
-    int get_demnomirator() {
+    ll get_demnomirator() {
         return denominator;
     }
 
     void simplify() {
-        int factor = gcd(abs(numirator), abs(denominator));
+        ll factor = gcd(abs(numirator), abs(denominator));
         numirator = numirator / factor;
         denominator = denominator / factor;
     }
 
 private:
-    int numirator, denominator;
+    ll numirator, denominator;
 };
 
 int main(){
